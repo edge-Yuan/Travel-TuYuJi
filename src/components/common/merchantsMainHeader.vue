@@ -3,6 +3,7 @@
         <div class="l-container">
             <img src="../../assets/logo/newlogo.png" alt="logo" class="logo-img">
             <span class="title">途遇纪旅游管理系统</span>
+            <!-- 增加了标志 -->
              <span class="title-small">旅行商端</span>
         </div>
         <div class="r-container">
