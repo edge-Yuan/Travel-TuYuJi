@@ -1,0 +1,22 @@
+/* 清除所有元素的默认内外边距 */
+* {
+  margin: 0;
+  padding: 0;
+  /* 可选：确保 padding 和 border 不影响元素总宽度 */
+  box-sizing: border-box;
+}
+
+/* 清除列表默认样式（如 ul、ol 的小圆点/编号） */
+ul, ol {
+  list-style: none;
+}
+
+/* 清除超链接默认样式 */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.el-menu-item {
+  background-color: transparent !important;
+}
