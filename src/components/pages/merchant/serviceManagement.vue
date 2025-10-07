@@ -521,6 +521,8 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   name: 'ServiceManagement',
   data() {
@@ -555,169 +557,101 @@ export default {
         suggestion: ''
       },
       todayStats: {
-        hotelCheckins: 15,
-        ticketEntries: 89,
-        routeServices: 12,
-        exceptions: 3
+        hotelCheckins: 0,
+        ticketEntries: 0,
+        routeServices: 0,
+        exceptions: 0
       },
-      services: [
-        {
-          id: 1,
-          orderNo: 'ORD202401150001',
-          customerName: '张三',
-          customerPhone: '138****1234',
-          customerIdCard: '110101199001011234',
-          emergencyContact: '李四',
-          serviceType: 'hotel',
-          serviceName: '豪华海景套房入住服务',
-          serviceImage: '/src/assets/images/travel.jpg',
-          serviceLocation: '三亚海景酒店',
-          serviceTime: '2024-01-20 14:00:00',
-          estimatedDuration: '30分钟',
-          status: 'pending',
-          staffName: '王服务员',
-          specialRequirements: '需要无烟房，高层海景',
-          records: [
-            {
-              id: 1,
-              type: 'checkin',
-              time: '2024-01-20 14:05:00',
-              staffName: '王服务员',
-              content: '客户到达酒店，开始办理入住手续',
-              notes: '客户对房间位置很满意',
-              images: []
-            }
-          ],
-          exceptions: []
-        },
-        {
-          id: 2,
-          orderNo: 'ORD202401150002',
-          customerName: '李四',
-          customerPhone: '139****5678',
-          customerIdCard: '110101199002021234',
-          emergencyContact: '王五',
-          serviceType: 'attraction',
-          serviceName: '故宫门票核验服务',
-          serviceImage: '/src/assets/images/travel2.jpg',
-          serviceLocation: '故宫博物院',
-          serviceTime: '2024-01-18 09:00:00',
-          estimatedDuration: '10分钟',
-          status: 'completed',
-          staffName: '赵检票员',
-          specialRequirements: '',
-          records: [
-            {
-              id: 1,
-              type: 'service',
-              time: '2024-01-18 09:00:00',
-              staffName: '赵检票员',
-              content: '核验门票，客户顺利入园',
-              notes: '客户对服务很满意',
-              images: []
-            },
-            {
-              id: 2,
-              type: 'completion',
-              time: '2024-01-18 09:10:00',
-              staffName: '赵检票员',
-              content: '服务完成，客户已入园游览',
-              notes: '',
-              images: []
-            }
-          ],
-          exceptions: []
-        },
-        {
-          id: 3,
-          orderNo: 'ORD202401150003',
-          customerName: '王五',
-          customerPhone: '137****9012',
-          customerIdCard: '110101199003031234',
-          emergencyContact: '赵六',
-          serviceType: 'route',
-          serviceName: '三亚三日游导游服务',
-          serviceImage: '/src/assets/images/travel3.jpg',
-          serviceLocation: '三亚市区',
-          serviceTime: '2024-01-25 08:00:00',
-          estimatedDuration: '3天',
-          status: 'in_progress',
-          staffName: '张导游',
-          specialRequirements: '需要英文导游',
-          records: [
-            {
-              id: 1,
-              type: 'service',
-              time: '2024-01-25 08:00:00',
-              staffName: '张导游',
-              content: '开始导游服务，接客户前往第一个景点',
-              notes: '客户对导游很满意',
-              images: []
-            }
-          ],
-          exceptions: [
-            {
-              id: 1,
-              type: 'delay',
-              description: '由于交通拥堵，到达景点时间比预计晚了30分钟',
-              solution: '已联系客户说明情况，调整后续行程',
-              time: '2024-01-25 08:30:00',
-              status: 'resolved'
-            }
-          ]
-        }
-      ]
+      services: [],
+      // API基础URL
+      apiBaseUrl: '/travel-admin'
     }
   },
   computed: {
     filteredServices() {
-      let filtered = this.services;
-      
-      if (this.filters.serviceType) {
-        filtered = filtered.filter(service => service.serviceType === this.filters.serviceType);
-      }
-      
-      if (this.filters.status) {
-        filtered = filtered.filter(service => service.status === this.filters.status);
-      }
-      
-      if (this.filters.keyword) {
-        filtered = filtered.filter(service => 
-          service.orderNo.toLowerCase().includes(this.filters.keyword.toLowerCase()) ||
-          service.customerName.toLowerCase().includes(this.filters.keyword.toLowerCase())
-        );
-      }
-      
-      return filtered;
+      // 由于现在使用后端分页，直接返回services
+      return this.services;
     }
   },
-  watch: {
-    filteredServices: {
-      handler(newVal) {
-        this.pagination.total = newVal.length;
-      },
-      immediate: true
-    }
+  mounted() {
+    this.loadTodayStatistics();
+    this.loadServices();
   },
   methods: {
+    // 加载今日统计数据
+    async loadTodayStatistics() {
+      try {
+        const response = await axios.get(`${this.apiBaseUrl}/service/statistics/today`);
+        if (response.data.code === 1) {
+          this.todayStats = response.data.data;
+        }
+      } catch (error) {
+        console.error('加载统计数据失败:', error);
+        this.$message.error('加载统计数据失败');
+      }
+    },
+
+    // 加载服务列表
+    async loadServices() {
+      this.loading = true;
+      try {
+        const searchParams = {
+          serviceType: this.filters.serviceType,
+          status: this.filters.status,
+          serviceDate: this.filters.serviceDate,
+          keyword: this.filters.keyword,
+          pageNum: this.pagination.currentPage,
+          pageSize: this.pagination.pageSize
+        };
+        
+        const response = await axios.post(`${this.apiBaseUrl}/service/page`, searchParams);
+        if (response.data.code === 1) {
+          this.services = response.data.data.records;
+          this.pagination.total = response.data.data.total;
+        } else {
+          this.$message.error(response.data.msg || '加载服务列表失败');
+        }
+      } catch (error) {
+        console.error('加载服务列表失败:', error);
+        this.$message.error('加载服务列表失败');
+      } finally {
+        this.loading = false;
+      }
+    },
+
     addService() {
       this.$message.info('新增服务功能开发中...');
     },
     
-    exportServices() {
-      this.$message.success('服务数据导出成功');
+    async exportServices() {
+      try {
+        const searchParams = {
+          serviceType: this.filters.serviceType,
+          status: this.filters.status,
+          serviceDate: this.filters.serviceDate,
+          keyword: this.filters.keyword
+        };
+        
+        const response = await axios.post(`${this.apiBaseUrl}/service/export`, searchParams);
+        if (response.data.code === 1) {
+          this.$message.success('服务数据导出成功');
+          // 这里可以添加下载文件的逻辑
+        } else {
+          this.$message.error(response.data.msg || '导出失败');
+        }
+      } catch (error) {
+        console.error('导出服务数据失败:', error);
+        this.$message.error('导出服务数据失败');
+      }
     },
     
     refreshServices() {
-      this.loading = true;
-      setTimeout(() => {
-        this.loading = false;
-        this.$message.success('数据刷新成功');
-      }, 1000);
+      this.loadServices();
     },
     
     searchServices() {
-      // 搜索逻辑已在computed中实现
+      this.pagination.currentPage = 1;
+      this.loadServices();
     },
     
     resetFilters() {
@@ -727,6 +661,8 @@ export default {
         serviceDate: new Date(),
         keyword: ''
       };
+      this.pagination.currentPage = 1;
+      this.loadServices();
     },
     
     getServiceTypeName(type) {
@@ -805,32 +741,66 @@ export default {
       return statusMap[status] || 'info';
     },
     
-    viewServiceDetail(service) {
-      this.selectedService = service;
-      this.showServiceDialog = true;
-      this.activeTab = 'basic';
+    async viewServiceDetail(service) {
+      try {
+        const response = await axios.get(`${this.apiBaseUrl}/service/${service.id}`);
+        if (response.data.code === 1) {
+          this.selectedService = response.data.data;
+          this.showServiceDialog = true;
+          this.activeTab = 'basic';
+        } else {
+          this.$message.error(response.data.msg || '获取服务详情失败');
+        }
+      } catch (error) {
+        console.error('获取服务详情失败:', error);
+        this.$message.error('获取服务详情失败');
+      }
     },
     
-    startService(service) {
-      this.$confirm('确定要开始这个服务吗？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        service.status = 'in_progress';
-        this.$message.success('服务已开始');
-      });
+    async startService(service) {
+      try {
+        await this.$confirm('确定要开始这个服务吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        });
+        
+        const response = await axios.put(`${this.apiBaseUrl}/service/${service.id}/start?staffName=当前用户`);
+        if (response.data.code === 1) {
+          this.$message.success('服务已开始');
+          this.loadServices(); // 重新加载列表
+        } else {
+          this.$message.error(response.data.msg || '开始服务失败');
+        }
+      } catch (error) {
+        if (error !== 'cancel') {
+          console.error('开始服务失败:', error);
+          this.$message.error('开始服务失败');
+        }
+      }
     },
     
-    completeService(service) {
-      this.$confirm('确定要完成这个服务吗？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        service.status = 'completed';
-        this.$message.success('服务已完成');
-      });
+    async completeService(service) {
+      try {
+        await this.$confirm('确定要完成这个服务吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        });
+        
+        const response = await axios.put(`${this.apiBaseUrl}/service/${service.id}/complete?staffName=当前用户`);
+        if (response.data.code === 1) {
+          this.$message.success('服务已完成');
+          this.loadServices(); // 重新加载列表
+        } else {
+          this.$message.error(response.data.msg || '完成服务失败');
+        }
+      } catch (error) {
+        if (error !== 'cancel') {
+          console.error('完成服务失败:', error);
+          this.$message.error('完成服务失败');
+        }
+      }
     },
     
     reportException(service) {
@@ -838,36 +808,59 @@ export default {
       this.showExceptionDialog = true;
     },
     
-    submitException() {
-      const exception = {
-        id: Date.now(),
-        type: this.exceptionForm.type,
-        description: this.exceptionForm.description,
-        priority: this.exceptionForm.priority,
-        suggestion: this.exceptionForm.suggestion,
-        time: new Date().toLocaleString(),
-        status: 'pending'
-      };
-      
-      if (!this.selectedService.exceptions) {
-        this.selectedService.exceptions = [];
+    async submitException() {
+      try {
+        const exceptionData = {
+          serviceId: this.selectedService.id,
+          exceptionType: this.exceptionForm.type,
+          description: this.exceptionForm.description,
+          priority: this.exceptionForm.priority,
+          suggestion: this.exceptionForm.suggestion
+        };
+        
+        const response = await axios.post(`${this.apiBaseUrl}/service/exception?createBy=当前用户`, exceptionData);
+        if (response.data.code === 1) {
+          this.showExceptionDialog = false;
+          this.$message.success('异常报告已提交');
+          this.resetExceptionForm();
+          this.loadServices(); // 重新加载列表
+        } else {
+          this.$message.error(response.data.msg || '提交异常报告失败');
+        }
+      } catch (error) {
+        console.error('提交异常报告失败:', error);
+        this.$message.error('提交异常报告失败');
       }
-      this.selectedService.exceptions.push(exception);
-      this.selectedService.status = 'exception';
-      
-      this.showExceptionDialog = false;
-      this.$message.success('异常报告已提交');
-      this.resetExceptionForm();
     },
     
-    resolveException(exception) {
-      exception.status = 'resolved';
-      this.$message.success('异常已解决');
+    async resolveException(exception) {
+      try {
+        const response = await axios.put(`${this.apiBaseUrl}/service/exception/${exception.id}/resolve?solution=已解决&resolveBy=当前用户`);
+        if (response.data.code === 1) {
+          this.$message.success('异常已解决');
+          this.loadServices(); // 重新加载列表
+        } else {
+          this.$message.error(response.data.msg || '解决异常失败');
+        }
+      } catch (error) {
+        console.error('解决异常失败:', error);
+        this.$message.error('解决异常失败');
+      }
     },
     
-    escalateException(exception) {
-      exception.status = 'escalated';
-      this.$message.success('异常已升级');
+    async escalateException(exception) {
+      try {
+        const response = await axios.put(`${this.apiBaseUrl}/service/exception/${exception.id}/escalate?resolveBy=当前用户`);
+        if (response.data.code === 1) {
+          this.$message.success('异常已升级');
+          this.loadServices(); // 重新加载列表
+        } else {
+          this.$message.error(response.data.msg || '升级异常失败');
+        }
+      } catch (error) {
+        console.error('升级异常失败:', error);
+        this.$message.error('升级异常失败');
+      }
     },
     
     addServiceRecord() {
@@ -880,25 +873,29 @@ export default {
       this.showRecordDialog = true;
     },
     
-    submitRecord() {
-      const record = {
-        id: Date.now(),
-        type: this.recordForm.type,
-        time: new Date().toLocaleString(),
-        staffName: '当前用户',
-        content: this.recordForm.content,
-        notes: this.recordForm.notes,
-        images: this.recordForm.images
-      };
-      
-      if (!this.selectedService.records) {
-        this.selectedService.records = [];
+    async submitRecord() {
+      try {
+        const recordData = {
+          serviceId: this.selectedService.id,
+          recordType: this.recordForm.type,
+          content: this.recordForm.content,
+          notes: this.recordForm.notes,
+          images: this.recordForm.images
+        };
+        
+        const response = await axios.post(`${this.apiBaseUrl}/service/record?createBy=当前用户`, recordData);
+        if (response.data.code === 1) {
+          this.showRecordDialog = false;
+          this.$message.success('服务记录已添加');
+          this.resetRecordForm();
+          this.loadServices(); // 重新加载列表
+        } else {
+          this.$message.error(response.data.msg || '添加服务记录失败');
+        }
+      } catch (error) {
+        console.error('添加服务记录失败:', error);
+        this.$message.error('添加服务记录失败');
       }
-      this.selectedService.records.push(record);
-      
-      this.showRecordDialog = false;
-      this.$message.success('服务记录已添加');
-      this.resetRecordForm();
     },
     
     handleRecordImageSuccess(response, file) {
@@ -946,10 +943,13 @@ export default {
     
     handleSizeChange(val) {
       this.pagination.pageSize = val;
+      this.pagination.currentPage = 1;
+      this.loadServices();
     },
     
     handleCurrentChange(val) {
       this.pagination.currentPage = val;
+      this.loadServices();
     }
   }
 }
