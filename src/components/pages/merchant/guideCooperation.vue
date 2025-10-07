@@ -8,62 +8,99 @@
 
     <!-- 搜索和筛选 -->
     <div class="filter-section">
-      <el-row :gutter="20">
-        <el-col :span="6">
-          <el-input
-            v-model="filters.keyword"
-            placeholder="搜索导游姓名或专长"
-            prefix-icon="el-icon-search"
-            clearable>
-          </el-input>
-        </el-col>
-        <el-col :span="4">
-          <el-select v-model="filters.location" placeholder="服务地区" clearable>
-            <el-option label="全部" value=""></el-option>
-            <el-option label="北京" value="beijing"></el-option>
-            <el-option label="上海" value="shanghai"></el-option>
-            <el-option label="广州" value="guangzhou"></el-option>
-            <el-option label="深圳" value="shenzhen"></el-option>
-            <el-option label="成都" value="chengdu"></el-option>
-          </el-select>
-        </el-col>
-        <el-col :span="4">
-          <el-select v-model="filters.language" placeholder="语言能力" clearable>
-            <el-option label="全部" value=""></el-option>
-            <el-option label="中文" value="chinese"></el-option>
-            <el-option label="英语" value="english"></el-option>
-            <el-option label="日语" value="japanese"></el-option>
-            <el-option label="韩语" value="korean"></el-option>
-          </el-select>
-        </el-col>
-        <el-col :span="4">
-          <el-select v-model="filters.experience" placeholder="经验等级" clearable>
-            <el-option label="全部" value=""></el-option>
-            <el-option label="新手(1-2年)" value="junior"></el-option>
-            <el-option label="中级(3-5年)" value="intermediate"></el-option>
-            <el-option label="高级(5年以上)" value="senior"></el-option>
-          </el-select>
-        </el-col>
-        <el-col :span="3">
-          <el-button type="primary" @click="searchGuides">搜索</el-button>
-        </el-col>
-        <el-col :span="3">
-          <el-button @click="resetFilters">重置</el-button>
-        </el-col>
-      </el-row>
+      <div class="filter-header">
+        <div class="filter-title">
+          <i class="el-icon-filter"></i>
+          <span>筛选条件</span>
+        </div>
+        <div class="filter-actions">
+          <el-button type="primary" @click="searchGuides">
+            <i class="el-icon-search"></i>
+            搜索
+          </el-button>
+          <el-button @click="resetFilters">
+            <i class="el-icon-refresh"></i>
+            重置
+          </el-button>
+        </div>
+      </div>
+      
+      <div class="filter-content">
+        <el-row :gutter="20">
+          <el-col :span="6">
+            <div class="filter-item">
+              <div class="filter-label">
+                <i class="el-icon-search"></i>
+                <span>搜索关键词</span>
+              </div>
+              <el-input
+                v-model="filters.keyword"
+                placeholder="请输入导游姓名或专长"
+                prefix-icon="el-icon-search"
+                clearable>
+              </el-input>
+            </div>
+          </el-col>
+          <el-col :span="4">
+            <div class="filter-item">
+              <div class="filter-label">
+                <i class="el-icon-location"></i>
+                <span>服务地区</span>
+              </div>
+              <el-select v-model="filters.location" placeholder="请选择服务地区" clearable>
+                <el-option label="全部" value=""></el-option>
+                <el-option label="北京" value="beijing"></el-option>
+                <el-option label="上海" value="shanghai"></el-option>
+                <el-option label="广州" value="guangzhou"></el-option>
+                <el-option label="深圳" value="shenzhen"></el-option>
+                <el-option label="成都" value="chengdu"></el-option>
+              </el-select>
+            </div>
+          </el-col>
+          <el-col :span="4">
+            <div class="filter-item">
+              <div class="filter-label">
+                <i class="el-icon-chat-line-round"></i>
+                <span>语言能力</span>
+              </div>
+              <el-select v-model="filters.language" placeholder="请选择语言能力" clearable>
+                <el-option label="全部" value=""></el-option>
+                <el-option label="中文" value="chinese"></el-option>
+                <el-option label="英语" value="english"></el-option>
+                <el-option label="日语" value="japanese"></el-option>
+                <el-option label="韩语" value="korean"></el-option>
+              </el-select>
+            </div>
+          </el-col>
+          <el-col :span="4">
+            <div class="filter-item">
+              <div class="filter-label">
+                <i class="el-icon-medal"></i>
+                <span>经验等级</span>
+              </div>
+              <el-select v-model="filters.experience" placeholder="请选择经验等级" clearable>
+                <el-option label="全部" value=""></el-option>
+                <el-option label="新手(1-2年)" value="junior"></el-option>
+                <el-option label="中级(3-5年)" value="intermediate"></el-option>
+                <el-option label="高级(5年以上)" value="senior"></el-option>
+              </el-select>
+            </div>
+          </el-col>
+        </el-row>
+      </div>
     </div>
 
     <!-- 导游列表 -->
-    <div class="guide-list">
-      <el-row :gutter="20">
-        <el-col :span="8" v-for="guide in filteredGuides" :key="guide.id">
+    <div class="guide-list" v-loading="loading">
+      <el-row :gutter="20" v-if="filteredGuides.length > 0">
+        <el-col :span="8" v-for="guide in filteredGuides" :key="guide.guideId">
           <el-card class="guide-card" shadow="hover">
             <div class="guide-header">
               <img :src="guide.avatar" class="guide-avatar" />
               <div class="guide-info">
-                <h3 class="guide-name">{{ guide.name }}</h3>
+                <h3 class="guide-name">{{ guide.realName }}</h3>
                 <div class="guide-rating">
-                  <el-rate v-model="guide.rating" disabled show-score text-color="#ff9900"></el-rate>
+                  <el-rate v-model="guide.serviceScore" disabled show-score text-color="#ff9900"></el-rate>
                 </div>
                 <div class="guide-location">
                   <i class="el-icon-location"></i> {{ guide.location }}
@@ -106,12 +143,12 @@
               
               <div class="detail-item">
                 <span class="label">服务价格：</span>
-                <span class="price">¥{{ guide.price }}/天</span>
+                <span class="price">¥{{ guide.baseFee }}/天</span>
               </div>
             </div>
             
             <div class="guide-description">
-              <p>{{ guide.description }}</p>
+              <p>{{ guide.bio }}</p>
             </div>
             
             <div class="guide-actions">
@@ -123,6 +160,9 @@
           </el-card>
         </el-col>
       </el-row>
+      <div v-else-if="!loading" class="no-data">
+        <el-empty description="暂无导游数据"></el-empty>
+      </div>
     </div>
 
     <!-- 分页 -->
@@ -144,9 +184,9 @@
         <div class="detail-header">
           <img :src="selectedGuide.avatar" class="detail-avatar" />
           <div class="detail-info">
-            <h2>{{ selectedGuide.name }}</h2>
+            <h2>{{ selectedGuide.realName }}</h2>
             <div class="detail-rating">
-              <el-rate v-model="selectedGuide.rating" disabled show-score text-color="#ff9900"></el-rate>
+              <el-rate v-model="selectedGuide.serviceScore" disabled show-score text-color="#ff9900"></el-rate>
             </div>
             <p class="detail-location">
               <i class="el-icon-location"></i> {{ selectedGuide.location }}
@@ -191,11 +231,11 @@
                   </div>
                   <div class="info-item">
                     <span class="label">服务价格：</span>
-                    <span class="price">¥{{ selectedGuide.price }}/天</span>
+                    <span class="price">¥{{ selectedGuide.baseFee }}/天</span>
                   </div>
                   <div class="info-item">
                     <span class="label">联系方式：</span>
-                    <span>{{ selectedGuide.contact }}</span>
+                    <span>{{ selectedGuide.phone }}</span>
                   </div>
                 </el-col>
               </el-row>
@@ -204,7 +244,7 @@
           
           <el-tab-pane label="服务评价" name="reviews">
             <div class="reviews-section">
-              <div v-for="review in selectedGuide.reviews" :key="review.id" class="review-item">
+              <div v-for="review in selectedGuide.reviews" :key="review.reviewId" class="review-item">
                 <div class="review-header">
                   <span class="reviewer-name">{{ review.reviewerName }}</span>
                   <el-rate v-model="review.rating" disabled size="small"></el-rate>
@@ -217,7 +257,7 @@
           
           <el-tab-pane label="服务案例" name="cases">
             <div class="cases-section">
-              <div v-for="caseItem in selectedGuide.cases" :key="caseItem.id" class="case-item">
+              <div v-for="caseItem in selectedGuide.cases" :key="caseItem.caseId" class="case-item">
                 <h4>{{ caseItem.title }}</h4>
                 <p>{{ caseItem.description }}</p>
                 <div class="case-images">
@@ -248,9 +288,9 @@
       <el-form :model="cooperationRequest" label-width="100px">
         <el-form-item label="合作类型">
           <el-radio-group v-model="cooperationRequest.type">
-            <el-radio label="exclusive">独家合作</el-radio>
-            <el-radio label="partnership">合作伙伴</el-radio>
-            <el-radio label="project">项目合作</el-radio>
+            <el-radio :label="1">独家合作</el-radio>
+            <el-radio :label="2">合作伙伴</el-radio>
+            <el-radio :label="3">项目合作</el-radio>
           </el-radio-group>
         </el-form-item>
         
@@ -276,11 +316,11 @@
         </el-form-item>
         
         <el-form-item label="合作条件">
-          <el-input type="textarea" v-model="cooperationRequest.conditions" :rows="3"></el-input>
+          <el-input type="textarea" v-model="cooperationRequest.conditions" :rows="3" resize="none" class="fixed-textarea"></el-input>
         </el-form-item>
         
         <el-form-item label="备注">
-          <el-input type="textarea" v-model="cooperationRequest.notes" :rows="2"></el-input>
+          <el-input type="textarea" v-model="cooperationRequest.notes" :rows="2" resize="none" class="fixed-textarea"></el-input>
         </el-form-item>
       </el-form>
       
@@ -293,6 +333,8 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   name: 'GuideCooperation',
   data() {
@@ -313,7 +355,7 @@ export default {
       selectedGuide: null,
       activeTab: 'basic',
       cooperationRequest: {
-        type: 'partnership',
+        type: 2, // 1-独家合作，2-合作伙伴，3-项目合作
         projects: [],
         duration: [],
         conditions: '',
@@ -324,39 +366,141 @@ export default {
         { id: 2, name: '三亚三日游' },
         { id: 3, name: '故宫门票' }
       ],
-      guides: [
+      guides: [],
+      loading: false,
+      // API基础URL
+      apiBaseUrl: '/travel-admin'
+    }
+  },
+  computed: {
+    filteredGuides() {
+      let filtered = this.guides;
+      
+      // 关键词筛选
+      if (this.filters.keyword) {
+        const keyword = this.filters.keyword.toLowerCase();
+        filtered = filtered.filter(guide => 
+          guide.realName.toLowerCase().includes(keyword) ||
+          guide.specialties.some(specialty => specialty.toLowerCase().includes(keyword)) ||
+          guide.bio.toLowerCase().includes(keyword)
+        );
+      }
+      
+      // 地区筛选
+      if (this.filters.location) {
+        const locationMap = {
+          'beijing': '北京',
+          'shanghai': '上海',
+          'guangzhou': '广州',
+          'shenzhen': '深圳',
+          'chengdu': '成都'
+        };
+        const targetLocation = locationMap[this.filters.location];
+        filtered = filtered.filter(guide => 
+          guide.location === targetLocation
+        );
+      }
+      
+      // 语言筛选
+      if (this.filters.language) {
+        const languageMap = {
+          'chinese': '中文',
+          'english': '英语',
+          'japanese': '日语',
+          'korean': '韩语'
+        };
+        const targetLanguage = languageMap[this.filters.language];
+        filtered = filtered.filter(guide => 
+          guide.languages.includes(targetLanguage)
+        );
+      }
+      
+      // 经验筛选
+      if (this.filters.experience) {
+        filtered = filtered.filter(guide => {
+          switch (this.filters.experience) {
+            case 'junior':
+              return guide.experience >= 1 && guide.experience <= 2;
+            case 'intermediate':
+              return guide.experience >= 3 && guide.experience <= 5;
+            case 'senior':
+              return guide.experience > 5;
+            default:
+              return true;
+          }
+        });
+      }
+      
+      return filtered;
+    }
+  },
+  mounted() {
+    this.loadGuides();
+  },
+  methods: {
+    // 加载导游列表
+    async loadGuides() {
+      this.loading = true;
+      try {
+        const response = await axios.get(`${this.apiBaseUrl}/guideCooperation/searchGuides`, {
+          params: {
+            page: this.pagination.currentPage,
+            size: this.pagination.pageSize,
+            keyword: this.filters.keyword,
+            location: this.filters.location,
+            language: this.filters.language,
+            experience: this.filters.experience
+          },
+          headers: {
+            'X-Merchant-Id': 30001 // 模拟旅行商ID
+          }
+        });
+        
+        if (response.data.code === 1) {
+          this.guides = response.data.data.guides || [];
+          this.pagination.total = response.data.data.total || 0;
+        } else {
+          this.$message.error(response.data.msg || '加载导游列表失败');
+        }
+      } catch (error) {
+        console.error('加载导游列表失败:', error);
+        this.$message.error('加载导游列表失败，请稍后重试');
+        // 如果API调用失败，使用模拟数据
+        this.loadMockGuides();
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    // 加载模拟数据（作为备用）
+    loadMockGuides() {
+      this.guides = [
         {
-          id: 1,
-          name: '张明',
+          guideId: 1,
+          realName: '张明',
           avatar: '/src/assets/logo/logo1.jpg',
-          rating: 4.8,
+          serviceScore: 4.8,
           location: '北京',
           specialties: ['历史文化', '古建筑', '博物馆'],
           languages: ['中文', '英语'],
           experience: 5,
           serviceCount: 156,
-          price: 500,
-          description: '专业的历史文化导游，对北京的历史文化有深入了解，服务热情周到。',
-          contact: '138****1234',
+          baseFee: 500,
+          bio: '专业的历史文化导游，对北京的历史文化有深入了解，服务热情周到。',
+          phone: '138****1234',
+          qualificationStatus: 1,
           reviews: [
             {
-              id: 1,
+              reviewId: 1,
               reviewerName: '李女士',
               rating: 5,
               date: '2024-01-15',
               content: '张导非常专业，讲解详细，服务态度很好！'
-            },
-            {
-              id: 2,
-              reviewerName: '王先生',
-              rating: 4,
-              date: '2024-01-10',
-              content: '对历史文化的讲解很深入，学到了很多知识。'
             }
           ],
           cases: [
             {
-              id: 1,
+              caseId: 1,
               title: '故宫深度游',
               description: '为游客提供故宫深度游览服务，讲解明清历史',
               images: ['/src/assets/images/travel.jpg', '/src/assets/images/travel2.jpg']
@@ -364,112 +508,87 @@ export default {
           ]
         },
         {
-          id: 2,
-          name: '李小红',
+          guideId: 2,
+          realName: '李小红',
           avatar: '/src/assets/logo/logo4.png',
-          rating: 4.6,
+          serviceScore: 4.6,
           location: '上海',
           specialties: ['现代都市', '购物', '美食'],
           languages: ['中文', '日语'],
           experience: 3,
           serviceCount: 89,
-          price: 400,
-          description: '熟悉上海各大商圈和美食，能够为游客提供优质的购物和美食体验。',
-          contact: '139****5678',
-          reviews: [
-            {
-              id: 1,
-              reviewerName: '陈女士',
-              rating: 5,
-              date: '2024-01-12',
-              content: '李导带我们去了很多好吃的餐厅，购物也很方便！'
-            }
-          ],
-          cases: [
-            {
-              id: 1,
-              title: '上海美食之旅',
-              description: '带领游客体验上海特色美食',
-              images: ['/src/assets/images/travel3.jpg']
-            }
-          ]
+          baseFee: 400,
+          bio: '熟悉上海各大商圈和美食，能够为游客提供优质的购物和美食体验。',
+          phone: '139****5678',
+          qualificationStatus: 1
         },
         {
-          id: 3,
-          name: '王强',
+          guideId: 3,
+          realName: '王强',
           avatar: '/src/assets/logo/test.png',
-          rating: 4.9,
+          serviceScore: 4.9,
           location: '广州',
           specialties: ['自然风光', '户外运动', '摄影'],
           languages: ['中文', '英语', '韩语'],
           experience: 7,
           serviceCount: 234,
-          price: 600,
-          description: '专业的户外导游，熟悉各种户外运动，能够为游客提供安全有趣的户外体验。',
-          contact: '137****9012',
-          reviews: [
-            {
-              id: 1,
-              reviewerName: '刘先生',
-              rating: 5,
-              date: '2024-01-08',
-              content: '王导的户外经验很丰富，安全措施做得很好！'
-            }
-          ],
-          cases: [
-            {
-              id: 1,
-              title: '白云山徒步',
-              description: '组织游客进行白云山徒步活动',
-              images: ['/src/assets/images/travel4.jpg', '/src/assets/images/travel5.jpg']
-            }
-          ]
+          baseFee: 600,
+          bio: '专业的户外导游，熟悉各种户外运动，能够为游客提供安全有趣的户外体验。',
+          phone: '137****9012',
+          qualificationStatus: 1
+        },
+        {
+          guideId: 4,
+          realName: '陈美丽',
+          avatar: '/src/assets/logo/logo1.jpg',
+          serviceScore: 4.7,
+          location: '深圳',
+          specialties: ['科技园区', '主题公园', '购物'],
+          languages: ['中文', '英语'],
+          experience: 2,
+          serviceCount: 89,
+          baseFee: 350,
+          bio: '深圳本地导游，熟悉各大科技园区和主题公园，服务热情周到。',
+          phone: '136****3456',
+          qualificationStatus: 1
+        },
+        {
+          guideId: 5,
+          realName: '刘建国',
+          avatar: '/src/assets/logo/logo4.png',
+          serviceScore: 4.5,
+          location: '成都',
+          specialties: ['美食文化', '古建筑', '茶馆文化'],
+          languages: ['中文', '日语'],
+          experience: 4,
+          serviceCount: 156,
+          baseFee: 450,
+          bio: '成都资深导游，对川菜文化和古建筑有深入研究，能够为游客提供深度的文化体验。',
+          phone: '135****7890',
+          qualificationStatus: 1
+        },
+        {
+          guideId: 6,
+          realName: '赵敏',
+          avatar: '/src/assets/logo/test.png',
+          serviceScore: 4.8,
+          location: '北京',
+          specialties: ['胡同文化', '传统手工艺', '京剧'],
+          languages: ['中文', '英语', '韩语'],
+          experience: 6,
+          serviceCount: 198,
+          baseFee: 550,
+          bio: '北京胡同文化专家，熟悉传统手工艺和京剧文化，能够为游客提供独特的文化体验。',
+          phone: '134****2468',
+          qualificationStatus: 1
         }
-      ]
-    }
-  },
-  computed: {
-    filteredGuides() {
-      let filtered = this.guides;
-      
-      if (this.filters.keyword) {
-        filtered = filtered.filter(guide => 
-          guide.name.toLowerCase().includes(this.filters.keyword.toLowerCase()) ||
-          guide.specialties.some(s => s.toLowerCase().includes(this.filters.keyword.toLowerCase()))
-        );
-      }
-      
-      if (this.filters.location) {
-        filtered = filtered.filter(guide => guide.location === this.filters.location);
-      }
-      
-      if (this.filters.language) {
-        filtered = filtered.filter(guide => guide.languages.includes(this.filters.language));
-      }
-      
-      if (this.filters.experience) {
-        const experienceMap = {
-          junior: guide => guide.experience >= 1 && guide.experience <= 2,
-          intermediate: guide => guide.experience >= 3 && guide.experience <= 5,
-          senior: guide => guide.experience > 5
-        };
-        filtered = filtered.filter(experienceMap[this.filters.experience]);
-      }
-      
-      return filtered;
-    }
-  },
-  watch: {
-    filteredGuides: {
-      handler(newVal) {
-        this.pagination.total = newVal.length;
-      },
-      immediate: true
-    }
-  },
-  methods: {
+      ];
+      this.pagination.total = this.guides.length;
+    },
+    
     searchGuides() {
-      // 搜索逻辑已在computed中实现
+      this.pagination.currentPage = 1;
+      this.loadGuides();
     },
     
     resetFilters() {
@@ -479,22 +598,82 @@ export default {
         language: '',
         experience: ''
       };
+      this.searchGuides();
     },
     
-    viewGuideProfile(guide) {
-      this.selectedGuide = guide;
+    async viewGuideProfile(guide) {
+      try {
+        const response = await axios.get(`${this.apiBaseUrl}/guideCooperation/guideDetail/${guide.guideId}`);
+        if (response.data.code === 1) {
+          this.selectedGuide = response.data.data;
+        } else {
+          this.selectedGuide = guide; // 使用列表中的数据作为备用
+        }
+      } catch (error) {
+        console.error('获取导游详情失败:', error);
+        this.selectedGuide = guide; // 使用列表中的数据作为备用
+      }
       this.showGuideDialog = true;
       this.activeTab = 'basic';
     },
     
     sendCooperationRequest(guide) {
       this.selectedGuide = guide;
+      this.cooperationRequest = {
+        type: 2, // 1-独家合作，2-合作伙伴，3-项目合作
+        projects: [],
+        duration: [],
+        conditions: '',
+        notes: ''
+      };
       this.showCooperationDialog = true;
     },
     
-    submitCooperationRequest() {
-      this.$message.success('合作邀请发送成功！');
-      this.showCooperationDialog = false;
+    async submitCooperationRequest() {
+      if (!this.selectedGuide) {
+        this.$message.error('请选择导游');
+        return;
+      }
+      
+      if (this.cooperationRequest.projects.length === 0) {
+        this.$message.error('请选择合作项目');
+        return;
+      }
+      
+      if (!this.cooperationRequest.duration || this.cooperationRequest.duration.length !== 2) {
+        this.$message.error('请选择合作期限');
+        return;
+      }
+      
+      try {
+        const requestData = {
+          guideId: this.selectedGuide.guideId,
+          cooperationType: this.cooperationRequest.type,
+          projectIds: this.cooperationRequest.projects,
+          startDate: this.cooperationRequest.duration[0],
+          endDate: this.cooperationRequest.duration[1],
+          conditions: this.cooperationRequest.conditions,
+          notes: this.cooperationRequest.notes
+        };
+        
+        const response = await axios.post(`${this.apiBaseUrl}/guideCooperation/sendCooperationRequest`, 
+          requestData, {
+          headers: {
+            'X-Merchant-Id': 30001, // 模拟旅行商ID
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.data.code === 1) {
+          this.$message.success('合作邀请发送成功！');
+          this.showCooperationDialog = false;
+        } else {
+          this.$message.error(response.data.msg || '发送合作邀请失败');
+        }
+      } catch (error) {
+        console.error('发送合作邀请失败:', error);
+        this.$message.error('发送合作邀请失败，请稍后重试');
+      }
     },
     
     previewImage(image) {
@@ -504,10 +683,12 @@ export default {
     
     handleSizeChange(val) {
       this.pagination.pageSize = val;
+      this.loadGuides();
     },
     
     handleCurrentChange(val) {
       this.pagination.currentPage = val;
+      this.loadGuides();
     }
   }
 }
@@ -534,10 +715,129 @@ export default {
 }
 
 .filter-section {
-  background: #f8f9fa;
-  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.filter-header {
+  background: linear-gradient(135deg, #2c5aa0 0%, #1e3a8a 100%);
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.filter-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.filter-actions .el-button {
+  height: 40px;
+  border-radius: 20px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+  padding: 0 20px;
+  min-width: 100px;
+}
+
+.filter-actions .el-button--primary {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.filter-actions .el-button--primary:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.filter-actions .el-button:not(.el-button--primary) {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.filter-actions .el-button:not(.el-button--primary):hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.filter-content {
+  padding: 24px;
+  background: #fafbfc;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.filter-label i {
+  color: #3b82f6;
+  font-size: 16px;
+}
+
+.filter-item .el-select,
+.filter-item .el-input {
+  width: 100%;
+}
+
+.filter-item .el-input__inner,
+.filter-item .el-select .el-input__inner {
+  height: 44px;
+  line-height: 44px;
   border-radius: 8px;
-  margin-bottom: 20px;
+  border: 1px solid #dcdfe6;
+  background: #fafbfc;
+  transition: all 0.3s ease;
+}
+
+.filter-item .el-input__inner:focus,
+.filter-item .el-select .el-input__inner:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background: white;
+}
+
+.filter-item .el-input__inner:hover,
+.filter-item .el-select .el-input__inner:hover {
+  border-color: #c0c4cc;
+  background: white;
 }
 
 .guide-list {
@@ -757,5 +1057,28 @@ export default {
 
 .dialog-footer {
   text-align: right;
+}
+
+/* 弹窗输入框固定大小和去掉右下角图标 */
+.fixed-textarea .el-textarea__inner {
+  resize: none !important;
+  width: 100% !important;
+  min-height: 80px !important;
+  max-height: 80px !important;
+}
+
+.fixed-textarea .el-textarea__inner::-webkit-resizer {
+  display: none !important;
+}
+
+/* 所有弹窗中的输入框 */
+.el-dialog .el-input__inner,
+.el-dialog .el-textarea__inner {
+  width: 100% !important;
+  resize: none !important;
+}
+
+.el-dialog .el-textarea__inner::-webkit-resizer {
+  display: none !important;
 }
 </style>

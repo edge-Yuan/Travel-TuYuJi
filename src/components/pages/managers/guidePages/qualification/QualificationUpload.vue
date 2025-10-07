@@ -86,36 +86,60 @@ const uploadFile = async () => {
   if (!selectedFile.value) return
   
   try {
+    console.log('开始上传资质证明文件:', selectedFile.value.name);
+    
     const formData = new FormData()
     formData.append('file', selectedFile.value)
+    formData.append('guideId', proxy.$store.state.userId || 10001) // 使用当前用户ID或默认值
+    formData.append('qualificationType', 'guide_cert') // 默认导游证类型
     
-    // 调用API上传文件
-    // const response = await proxy.$axios.post('/qualifications/upload', formData, {
-    //   headers: { 'Content-Type': 'multipart/form-data' }
-    // })
+    console.log('资质证明上传数据:', {
+      fileName: selectedFile.value.name,
+      fileSize: selectedFile.value.size,
+      fileType: selectedFile.value.type,
+      guideId: proxy.$store.state.userId || 10001,
+      qualificationType: 'guide_cert'
+    });
     
-    // 模拟上传成功
-    alert('上传成功')
-    clearPreview()
-    // 可以在这里刷新文件列表
+    // 调用后端资质证明上传接口
+    const response = await proxy.$axios.post('/travel-portal/upload/qualification', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    
+    console.log('资质证明上传响应:', response);
+    
+    // 解析响应数据
+    const data = response.data || response;
+    const uploadResult = data.data || data.result || data;
+    
+    if (uploadResult && uploadResult.url) {
+      proxy.$message.success('资质证明上传成功！');
+      clearPreview();
+      // 可以在这里刷新文件列表
+    } else {
+      throw new Error('上传响应数据格式错误');
+    }
   } catch (error) {
-    console.error('上传失败:', error)
-    alert('上传失败: ' + error.message)
+    console.error('资质证明上传失败:', error);
+    proxy.$message.error('上传失败: ' + (error.message || '请重试'));
   }
 }
 
 const deleteFile = async (id) => {
   if (confirm('确定要删除该文件吗？')) {
     try {
-      // 调用API删除文件
-      // await proxy.$axios.delete(`/qualifications/${id}`)
+      console.log('开始删除文件，文件ID:', id);
       
-      // 模拟删除成功
-      alert('删除成功')
+      // 调用后端删除文件接口
+      const response = await proxy.$axios.delete(`/travel-portal/upload/file/${id}`);
+      
+      console.log('文件删除响应:', response);
+      
+      proxy.$message.success('文件删除成功！');
       // 可以在这里刷新文件列表
     } catch (error) {
-      console.error('删除失败:', error)
-      alert('删除失败: ' + error.message)
+      console.error('文件删除失败:', error);
+      proxy.$message.error('删除失败: ' + (error.message || '请重试'));
     }
   }
 }

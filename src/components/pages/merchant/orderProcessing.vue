@@ -7,128 +7,229 @@
     </div>
 
     <!-- 统计卡片 -->
-    <div class="stats-section">
+    <div class="stats-panel">
       <el-row :gutter="20">
         <el-col :span="6">
-          <div class="stat-card">
+          <el-card class="stat-card">
+            <div class="stat-content">
             <div class="stat-icon pending">
               <i class="el-icon-time"></i>
             </div>
-            <div class="stat-content">
-              <div class="stat-number">{{ stats.pending }}</div>
+              <div class="stat-info">
+                <div class="stat-value">{{ stats.pending }}</div>
               <div class="stat-label">待确认</div>
             </div>
           </div>
+          </el-card>
         </el-col>
         <el-col :span="6">
-          <div class="stat-card">
+          <el-card class="stat-card">
+            <div class="stat-content">
             <div class="stat-icon confirmed">
               <i class="el-icon-check"></i>
             </div>
-            <div class="stat-content">
-              <div class="stat-number">{{ stats.confirmed }}</div>
+              <div class="stat-info">
+                <div class="stat-value">{{ stats.confirmed }}</div>
               <div class="stat-label">已确认</div>
             </div>
           </div>
+          </el-card>
         </el-col>
         <el-col :span="6">
-          <div class="stat-card">
+          <el-card class="stat-card">
+            <div class="stat-content">
             <div class="stat-icon completed">
               <i class="el-icon-circle-check"></i>
             </div>
-            <div class="stat-content">
-              <div class="stat-number">{{ stats.completed }}</div>
+              <div class="stat-info">
+                <div class="stat-value">{{ stats.completed }}</div>
               <div class="stat-label">已完成</div>
             </div>
           </div>
+          </el-card>
         </el-col>
         <el-col :span="6">
-          <div class="stat-card">
+          <el-card class="stat-card">
+            <div class="stat-content">
             <div class="stat-icon refunding">
               <i class="el-icon-refresh"></i>
             </div>
-            <div class="stat-content">
-              <div class="stat-number">{{ stats.refunding }}</div>
+              <div class="stat-info">
+                <div class="stat-value">{{ stats.refunding }}</div>
               <div class="stat-label">退款中</div>
             </div>
           </div>
+          </el-card>
         </el-col>
       </el-row>
     </div>
 
     <!-- 筛选和搜索 -->
     <div class="filter-section">
-      <el-row :gutter="20">
-        <el-col :span="4">
-          <el-select v-model="filters.status" placeholder="订单状态" clearable>
-            <el-option label="全部" value=""></el-option>
-            <el-option label="待确认" value="pending"></el-option>
-            <el-option label="已确认" value="confirmed"></el-option>
-            <el-option label="已完成" value="completed"></el-option>
-            <el-option label="退款中" value="refunding"></el-option>
-            <el-option label="已退款" value="refunded"></el-option>
-          </el-select>
-        </el-col>
-        <el-col :span="4">
-          <el-select v-model="filters.productType" placeholder="产品类型" clearable>
-            <el-option label="全部" value=""></el-option>
-            <el-option label="酒店客房" value="hotel"></el-option>
-            <el-option label="旅行路线" value="route"></el-option>
-            <el-option label="门票" value="ticket"></el-option>
-          </el-select>
-        </el-col>
-        <el-col :span="6">
-          <el-date-picker
-            v-model="filters.dateRange"
-            type="daterange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期">
-          </el-date-picker>
-        </el-col>
-        <el-col :span="6">
-          <el-input
-            v-model="filters.keyword"
-            placeholder="搜索订单号或客户姓名"
-            prefix-icon="el-icon-search"
-            clearable>
-          </el-input>
-        </el-col>
-        <el-col :span="4">
-          <el-button type="primary" @click="searchOrders">搜索</el-button>
-          <el-button @click="resetFilters">重置</el-button>
-        </el-col>
-      </el-row>
+      <div class="filter-container">
+        <div class="filter-header">
+          <div class="filter-title">
+            <i class="el-icon-search"></i>
+            <span>筛选条件</span>
+          </div>
+          <div class="filter-actions">
+            <el-button type="primary" @click="searchOrders" class="search-btn">
+              <i class="el-icon-search"></i>
+              搜索
+            </el-button>
+            <el-button @click="resetFilters" class="reset-btn">
+              <i class="el-icon-refresh"></i>
+              重置
+            </el-button>
+          </div>
+        </div>
+        
+        <div class="filter-content">
+          <div class="filter-row">
+            <div class="filter-item">
+              <div class="filter-label">
+                <i class="el-icon-s-order"></i>
+                <span>订单状态</span>
+              </div>
+              <el-select v-model="filters.status" placeholder="请选择订单状态" clearable class="filter-select">
+                <el-option label="全部状态" value=""></el-option>
+                <el-option label="待确认" value="pending">
+                  <span style="float: left">待确认</span>
+                  <span style="float: right; color: #8492a6; font-size: 13px">等待商家确认</span>
+                </el-option>
+                <el-option label="已确认" value="confirmed">
+                  <span style="float: left">已确认</span>
+                  <span style="float: right; color: #8492a6; font-size: 13px">商家已确认</span>
+                </el-option>
+                <el-option label="已完成" value="completed">
+                  <span style="float: left">已完成</span>
+                  <span style="float: right; color: #8492a6; font-size: 13px">订单已完成</span>
+                </el-option>
+                <el-option label="退款中" value="refunding">
+                  <span style="float: left">退款中</span>
+                  <span style="float: right; color: #8492a6; font-size: 13px">正在处理退款</span>
+                </el-option>
+                <el-option label="已退款" value="refunded">
+                  <span style="float: left">已退款</span>
+                  <span style="float: right; color: #8492a6; font-size: 13px">退款已完成</span>
+                </el-option>
+              </el-select>
+            </div>
+            
+            <div class="filter-item">
+              <div class="filter-label">
+                <i class="el-icon-goods"></i>
+                <span>产品类型</span>
+              </div>
+              <el-select v-model="filters.productType" placeholder="请选择产品类型" clearable class="filter-select">
+                <el-option label="全部类型" value=""></el-option>
+                <el-option label="酒店客房" value="hotel">
+                  <span style="float: left">酒店客房</span>
+                  <span style="float: right; color: #8492a6; font-size: 13px">住宿服务</span>
+                </el-option>
+                <el-option label="旅行路线" value="route">
+                  <span style="float: left">旅行路线</span>
+                  <span style="float: right; color: #8492a6; font-size: 13px">旅游套餐</span>
+                </el-option>
+                <el-option label="门票" value="ticket">
+                  <span style="float: left">门票</span>
+                  <span style="float: right; color: #8492a6; font-size: 13px">景点门票</span>
+                </el-option>
+              </el-select>
+            </div>
+            
+            <div class="filter-item date-filter-item">
+              <div class="filter-label">
+                <i class="el-icon-date"></i>
+                <span>下单时间</span>
+              </div>
+              <el-date-picker
+                v-model="filters.dateRange"
+                type="daterange"
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+                class="filter-date-picker"
+                style="width: 100%; min-width: 320px;">
+              </el-date-picker>
+            </div>
+            
+            <div class="filter-item">
+              <div class="filter-label">
+                <i class="el-icon-search"></i>
+                <span>关键词搜索</span>
+              </div>
+              <el-input
+                v-model="filters.keyword"
+                placeholder="输入订单号或客户姓名"
+                prefix-icon="el-icon-search"
+                clearable
+                class="filter-input">
+              </el-input>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- 操作栏 -->
     <div class="action-bar">
-      <el-button type="success" @click="batchConfirm">
+      <div class="action-buttons-row">
+        <el-button type="success" @click="batchConfirm" class="action-btn">
         <i class="el-icon-check"></i> 批量确认
       </el-button>
-      <el-button type="info" @click="exportOrders">
+        <el-button type="info" @click="exportOrders" class="action-btn">
         <i class="el-icon-download"></i> 导出订单
       </el-button>
-      <el-button type="warning" @click="showRefundDialog = true">
+        <el-button type="warning" @click="showRefundDialog = true" class="action-btn">
         <i class="el-icon-refresh"></i> 批量退款
       </el-button>
+      </div>
+      <div class="action-right" v-if="selectedOrders.length > 0">
+        <span class="selected-count">已选择 {{ selectedOrders.length }} 项</span>
+        <el-button size="small" @click="batchConfirm">批量确认</el-button>
+        <el-button size="small" type="warning" @click="showRefundDialog = true">批量退款</el-button>
+      </div>
     </div>
 
     <!-- 订单列表 -->
     <div class="order-list">
-      <el-table :data="filteredOrders" v-loading="loading" stripe @selection-change="handleSelectionChange">
+      <el-table 
+        :data="filteredOrders" 
+        v-loading="loading" 
+        stripe 
+        @selection-change="handleSelectionChange"
+        :header-cell-style="{ background: '#f8f9fa', color: '#495057', fontWeight: '600', textAlign: 'center' }"
+        :cell-style="{ padding: '16px 12px', textAlign: 'center' }"
+        style="width: 100%">
         <el-table-column type="selection" width="55"></el-table-column>
         <el-table-column prop="orderNo" label="订单号" width="180" fixed="left">
           <template slot-scope="scope">
-            <el-link type="primary" @click="viewOrderDetail(scope.row)">{{ scope.row.orderNo }}</el-link>
+            <el-link type="primary" @click="viewOrderDetail(scope.row)">{{ scope.row.orderNo || 'ORD' + scope.row.orderId }}</el-link>
           </template>
         </el-table-column>
-        <el-table-column prop="customerName" label="客户姓名" width="120"></el-table-column>
-        <el-table-column prop="customerPhone" label="联系电话" width="130"></el-table-column>
-        <el-table-column prop="productName" label="产品名称" min-width="200">
+        <el-table-column prop="customerName" label="客户姓名" width="120">
+          <template slot-scope="scope">
+            {{ scope.row.customerName || scope.row.receiverName || '未知' }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="customerPhone" label="联系电话" width="130">
+          <template slot-scope="scope">
+            {{ scope.row.customerPhone || scope.row.receiverPhone || '未知' }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="productName" label="产品名称" min-width="250" align="center">
           <template slot-scope="scope">
             <div class="product-info">
-              <img :src="scope.row.productImage" class="product-image" />
+              <el-image 
+                :src="scope.row.productImage || '/src/assets/images/travel.jpg'" 
+                class="product-image"
+                :preview-src-list="[scope.row.productImage || '/src/assets/images/travel.jpg']"
+                fit="cover">
+                <div slot="error" class="image-slot">
+                  <i class="el-icon-picture-outline"></i>
+                </div>
+              </el-image>
               <div class="product-details">
                 <div class="product-name">{{ scope.row.productName }}</div>
                 <div class="product-type">
@@ -140,45 +241,69 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="quantity" label="数量" width="80"></el-table-column>
-        <el-table-column prop="totalAmount" label="总金额" width="120">
+        <el-table-column prop="quantity" label="数量" width="80">
           <template slot-scope="scope">
-            <span class="amount">¥{{ scope.row.totalAmount }}</span>
+            {{ scope.row.productQuantity || scope.row.travellers || 1 }}
           </template>
         </el-table-column>
-        <el-table-column prop="orderTime" label="下单时间" width="160"></el-table-column>
-        <el-table-column prop="useTime" label="使用时间" width="160"></el-table-column>
+        <el-table-column prop="totalAmount" label="总金额" width="120">
+          <template slot-scope="scope">
+            <span class="amount">¥{{ scope.row.totalAmount || scope.row.totalPrice || 0 }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="orderTime" label="下单时间" width="160">
+          <template slot-scope="scope">
+            {{ scope.row.createTime || scope.row.orderTime || '未知' }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="useTime" label="使用时间" width="160">
+          <template slot-scope="scope">
+            {{ scope.row.useTime || scope.row.bookingDate || '未知' }}
+          </template>
+        </el-table-column>
         <el-table-column prop="status" label="状态" width="100">
           <template slot-scope="scope">
-            <el-tag :type="getStatusTagType(scope.row.status)" size="mini">
-              {{ getStatusName(scope.row.status) }}
+            <el-tag :type="getStatusTagType(scope.row.orderStatus || scope.row.status)" size="mini">
+              {{ getStatusName(scope.row.orderStatus || scope.row.status) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="280" fixed="right">
           <template slot-scope="scope">
-            <el-button size="mini" @click="viewOrderDetail(scope.row)">详情</el-button>
+            <div class="action-buttons">
+              <el-button size="mini" @click="viewOrderDetail(scope.row)" class="action-btn detail-btn">
+                <i class="el-icon-view"></i> 详情
+              </el-button>
+              <!-- 调试信息 -->
+              <span style="font-size: 10px; color: #999; display: block;">
+                状态: {{ scope.row.orderStatus || scope.row.status }} 
+                (类型: {{ typeof (scope.row.orderStatus || scope.row.status) }})
+              </span>
             <el-button 
               size="mini" 
               type="success" 
-              v-if="scope.row.status === 'pending'"
-              @click="confirmOrder(scope.row)">
-              确认
+              v-if="(scope.row.orderStatus || scope.row.status) === 0 || (scope.row.orderStatus || scope.row.status) === 'pending'"
+                @click="confirmOrder(scope.row)"
+                class="action-btn confirm-btn">
+                <i class="el-icon-check"></i> 确认
             </el-button>
             <el-button 
               size="mini" 
               type="warning" 
-              v-if="scope.row.status === 'confirmed'"
-              @click="completeOrder(scope.row)">
-              完成
+              v-if="(scope.row.orderStatus || scope.row.status) === 1 || (scope.row.orderStatus || scope.row.status) === 'confirmed'"
+                @click="completeOrder(scope.row)"
+                class="action-btn complete-btn">
+                <i class="el-icon-circle-check"></i> 完成
             </el-button>
             <el-button 
               size="mini" 
               type="danger" 
-              v-if="scope.row.status === 'pending' || scope.row.status === 'confirmed'"
-              @click="refundOrder(scope.row)">
-              退款
+              v-if="((scope.row.orderStatus || scope.row.status) === 0 || (scope.row.orderStatus || scope.row.status) === 'pending') || ((scope.row.orderStatus || scope.row.status) === 1 || (scope.row.orderStatus || scope.row.status) === 'confirmed')"
+                @click="refundOrder(scope.row)"
+                class="action-btn refund-btn">
+                <i class="el-icon-refresh"></i> 退款
             </el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -371,7 +496,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="退款说明">
-          <el-input type="textarea" v-model="refundForm.description" :rows="3"></el-input>
+          <el-input type="textarea" v-model="refundForm.description" :rows="3" resize="none" class="fixed-textarea"></el-input>
         </el-form-item>
       </el-form>
       
@@ -384,6 +509,8 @@
 </template>
 
 <script>
+import request from '@/utils/request'
+
 export default {
   name: 'OrderProcessing',
   data() {
@@ -411,141 +538,88 @@ export default {
         description: ''
       },
       stats: {
-        pending: 12,
-        confirmed: 45,
-        completed: 156,
-        refunding: 8
+        pending: 0,
+        confirmed: 0,
+        completed: 0,
+        refunding: 0
       },
-      orders: [
-        {
-          id: 1,
-          orderNo: 'ORD202401150001',
-          customerName: '张三',
-          customerPhone: '138****1234',
-          customerEmail: 'zhangsan@email.com',
-          customerIdCard: '110101199001011234',
-          emergencyContact: '李四',
-          emergencyPhone: '139****5678',
-          productName: '豪华海景套房',
-          productType: 'hotel',
-          productImage: '/src/assets/images/travel.jpg',
-          productDescription: '面朝大海的豪华套房，享受无敌海景',
-          quantity: 2,
-          totalAmount: 2576,
-          discountAmount: 200,
-          paidAmount: 2376,
-          orderTime: '2024-01-15 10:30:00',
-          useTime: '2024-01-20 14:00:00',
-          status: 'pending',
-          paymentMethod: '微信支付',
-          specialRequirements: '需要无烟房，高层海景',
-          changes: [
-            {
-              id: 1,
-              type: '修改入住日期',
-              reason: '行程变更',
-              content: '从2024-01-20改为2024-01-22',
-              time: '2024-01-16 09:15:00',
-              status: 'pending'
-            }
-          ],
-          refunds: []
-        },
-        {
-          id: 2,
-          orderNo: 'ORD202401150002',
-          customerName: '李四',
-          customerPhone: '139****5678',
-          customerEmail: 'lisi@email.com',
-          customerIdCard: '110101199002021234',
-          emergencyContact: '王五',
-          emergencyPhone: '137****9012',
-          productName: '三亚三日游',
-          productType: 'route',
-          productImage: '/src/assets/images/travel2.jpg',
-          productDescription: '经典三亚三日游，包含主要景点',
-          quantity: 1,
-          totalAmount: 2588,
-          discountAmount: 0,
-          paidAmount: 2588,
-          orderTime: '2024-01-15 14:20:00',
-          useTime: '2024-01-25 08:00:00',
-          status: 'confirmed',
-          paymentMethod: '支付宝',
-          specialRequirements: '需要英文导游',
-          changes: [],
-          refunds: []
-        },
-        {
-          id: 3,
-          orderNo: 'ORD202401150003',
-          customerName: '王五',
-          customerPhone: '137****9012',
-          customerEmail: 'wangwu@email.com',
-          customerIdCard: '110101199003031234',
-          emergencyContact: '赵六',
-          emergencyPhone: '136****3456',
-          productName: '故宫门票',
-          productType: 'ticket',
-          productImage: '/src/assets/images/travel3.jpg',
-          productDescription: '故宫博物院门票，感受皇家文化',
-          quantity: 4,
-          totalAmount: 240,
-          discountAmount: 0,
-          paidAmount: 240,
-          orderTime: '2024-01-15 16:45:00',
-          useTime: '2024-01-18 09:00:00',
-          status: 'completed',
-          paymentMethod: '银行卡',
-          specialRequirements: '',
-          changes: [],
-          refunds: []
-        }
-      ]
+      orders: []
     }
   },
   computed: {
     filteredOrders() {
-      let filtered = this.orders;
-      
-      if (this.filters.status) {
-        filtered = filtered.filter(order => order.status === this.filters.status);
-      }
-      
-      if (this.filters.productType) {
-        filtered = filtered.filter(order => order.productType === this.filters.productType);
-      }
-      
-      if (this.filters.keyword) {
-        filtered = filtered.filter(order => 
-          order.orderNo.toLowerCase().includes(this.filters.keyword.toLowerCase()) ||
-          order.customerName.toLowerCase().includes(this.filters.keyword.toLowerCase())
-        );
-      }
-      
-      if (this.filters.dateRange && this.filters.dateRange.length === 2) {
-        const startDate = new Date(this.filters.dateRange[0]);
-        const endDate = new Date(this.filters.dateRange[1]);
-        filtered = filtered.filter(order => {
-          const orderDate = new Date(order.orderTime);
-          return orderDate >= startDate && orderDate <= endDate;
-        });
-      }
-      
-      return filtered;
+      return this.orders;
     }
   },
-  watch: {
-    filteredOrders: {
-      handler(newVal) {
-        this.pagination.total = newVal.length;
-      },
-      immediate: true
-    }
+  mounted() {
+    this.loadOrderStatistics();
+    this.loadOrders();
   },
   methods: {
+    // API基础配置
+    getApiBaseUrl() {
+      return '/travel-admin';
+    },
+
+    // 加载订单统计信息
+    async loadOrderStatistics() {
+      try {
+        const response = await request.get(`${this.getApiBaseUrl()}/order/statistics`);
+        if (response.data.code === 1) {
+          this.stats = {
+            pending: response.data.data.pending || 0,
+            confirmed: response.data.data.confirmed || 0,
+            completed: response.data.data.completed || 0,
+            refunding: response.data.data.refunding || 0
+          };
+        }
+      } catch (error) {
+        console.error('加载订单统计失败:', error);
+        this.$message.error('加载统计信息失败');
+      }
+    },
+
+    // 加载订单列表
+    async loadOrders() {
+      this.loading = true;
+      try {
+        const searchParams = {
+          current: this.pagination.currentPage,
+          size: this.pagination.pageSize,
+          status: this.filters.status || null,
+          productType: this.filters.productType || null,
+          keyword: this.filters.keyword || null,
+          startDate: this.filters.dateRange && this.filters.dateRange.length > 0 ? this.filters.dateRange[0] : null,
+          endDate: this.filters.dateRange && this.filters.dateRange.length > 1 ? this.filters.dateRange[1] : null
+        };
+
+        const response = await request.post(`${this.getApiBaseUrl()}/order/page`, searchParams);
+        if (response.data.code === 1) {
+          this.orders = response.data.data.records || [];
+          this.pagination.total = response.data.data.total || 0;
+          // 调试：打印订单数据结构
+          console.log('订单数据:', this.orders);
+          if (this.orders.length > 0) {
+            console.log('第一个订单的状态字段:', {
+              orderStatus: this.orders[0].orderStatus,
+              status: this.orders[0].status,
+              allFields: Object.keys(this.orders[0])
+            });
+          }
+        } else {
+          this.$message.error(response.data.msg || '加载订单失败');
+        }
+      } catch (error) {
+        console.error('加载订单失败:', error);
+        this.$message.error('加载订单失败');
+      } finally {
+        this.loading = false;
+      }
+    },
+
     searchOrders() {
-      // 搜索逻辑已在computed中实现
+      this.pagination.currentPage = 1;
+      this.loadOrders();
     },
     
     resetFilters() {
@@ -555,6 +629,8 @@ export default {
         dateRange: [],
         keyword: ''
       };
+      this.pagination.currentPage = 1;
+      this.loadOrders();
     },
     
     getTypeName(type) {
@@ -576,25 +652,49 @@ export default {
     },
     
     getStatusName(status) {
-      const statusMap = {
-        pending: '待确认',
-        confirmed: '已确认',
-        completed: '已完成',
-        refunding: '退款中',
-        refunded: '已退款'
-      };
-      return statusMap[status] || status;
+      if (typeof status === 'string') {
+        const statusMap = {
+          pending: '待确认',
+          confirmed: '已确认',
+          completed: '已完成',
+          refunding: '退款中',
+          refunded: '已退款'
+        };
+        return statusMap[status] || status;
+      } else if (typeof status === 'number') {
+        const statusMap = {
+          0: '待确认',
+          1: '已确认',
+          2: '已完成',
+          3: '已取消',
+          4: '退款中'
+        };
+        return statusMap[status] || '未知';
+      }
+      return status;
     },
     
     getStatusTagType(status) {
-      const statusMap = {
-        pending: 'warning',
-        confirmed: 'primary',
-        completed: 'success',
-        refunding: 'info',
-        refunded: 'danger'
-      };
-      return statusMap[status] || 'info';
+      if (typeof status === 'string') {
+        const statusMap = {
+          pending: 'warning',
+          confirmed: 'primary',
+          completed: 'success',
+          refunding: 'info',
+          refunded: 'danger'
+        };
+        return statusMap[status] || 'info';
+      } else if (typeof status === 'number') {
+        const statusMap = {
+          0: 'warning',
+          1: 'primary',
+          2: 'success',
+          3: 'info',
+          4: 'danger'
+        };
+        return statusMap[status] || 'info';
+      }
+      return 'info';
     },
     
     getChangeStatusName(status) {
@@ -639,64 +739,101 @@ export default {
       this.selectedOrders = selection;
     },
     
-    viewOrderDetail(order) {
-      this.selectedOrder = order;
-      this.showOrderDialog = true;
-      this.activeTab = 'basic';
+    async viewOrderDetail(order) {
+      try {
+        const response = await request.get(`${this.getApiBaseUrl()}/order/detail/${order.orderId}`);
+        if (response.data.code === 1) {
+          this.selectedOrder = response.data.data;
+          this.showOrderDialog = true;
+          this.activeTab = 'basic';
+        } else {
+          this.$message.error(response.data.msg || '获取订单详情失败');
+        }
+      } catch (error) {
+        console.error('获取订单详情失败:', error);
+        this.$message.error('获取订单详情失败');
+      }
     },
     
-    confirmOrder(order) {
+    async confirmOrder(order) {
       this.$confirm('确定要确认这个订单吗？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then(() => {
-        order.status = 'confirmed';
-        this.$message.success('订单确认成功');
+      }).then(async () => {
+        try {
+          const response = await request.put(`${this.getApiBaseUrl()}/order/confirm/${order.orderId}`);
+          if (response.data.code === 1) {
+            this.$message.success('订单确认成功');
+            this.loadOrders();
+            this.loadOrderStatistics();
+          } else {
+            this.$message.error(response.data.msg || '订单确认失败');
+          }
+        } catch (error) {
+          console.error('确认订单失败:', error);
+          this.$message.error('订单确认失败');
+        }
       });
     },
     
-    completeOrder(order) {
+    async completeOrder(order) {
       this.$confirm('确定要完成这个订单吗？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then(() => {
-        order.status = 'completed';
-        this.$message.success('订单完成');
+      }).then(async () => {
+        try {
+          const response = await request.put(`${this.getApiBaseUrl()}/order/complete/${order.orderId}`);
+          if (response.data.code === 1) {
+            this.$message.success('订单完成');
+            this.loadOrders();
+            this.loadOrderStatistics();
+          } else {
+            this.$message.error(response.data.msg || '订单完成失败');
+          }
+        } catch (error) {
+          console.error('完成订单失败:', error);
+          this.$message.error('订单完成失败');
+        }
       });
     },
     
     refundOrder(order) {
-      this.refundForm.amount = order.paidAmount;
+      this.refundForm.amount = order.totalAmount || order.paidAmount;
       this.selectedOrder = order;
       this.showRefundDialog = true;
     },
     
-    submitRefund() {
+    async submitRefund() {
       this.$confirm('确定要处理这个退款申请吗？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then(() => {
-        const refund = {
-          id: Date.now(),
-          amount: this.refundForm.amount,
-          reason: this.refundForm.reason,
-          description: this.refundForm.description,
-          time: new Date().toLocaleString(),
-          status: 'pending'
-        };
-        
-        if (!this.selectedOrder.refunds) {
-          this.selectedOrder.refunds = [];
+      }).then(async () => {
+        try {
+          const refundData = {
+            orderId: this.selectedOrder.orderId,
+            amount: this.refundForm.amount,
+            reason: this.refundForm.reason,
+            description: this.refundForm.description,
+            refundType: this.refundForm.reason
+          };
+
+          const response = await request.post(`${this.getApiBaseUrl()}/order/refund`, refundData);
+          if (response.data.code === 1) {
+            this.showRefundDialog = false;
+            this.$message.success('退款申请已提交');
+            this.resetRefundForm();
+            this.loadOrders();
+            this.loadOrderStatistics();
+          } else {
+            this.$message.error(response.data.msg || '退款申请失败');
+          }
+        } catch (error) {
+          console.error('提交退款失败:', error);
+          this.$message.error('退款申请失败');
         }
-        this.selectedOrder.refunds.push(refund);
-        this.selectedOrder.status = 'refunding';
-        
-        this.showRefundDialog = false;
-        this.$message.success('退款申请已提交');
-        this.resetRefundForm();
       });
     },
     
@@ -720,7 +857,7 @@ export default {
       this.$message.success('变更申请已拒绝');
     },
     
-    batchConfirm() {
+    async batchConfirm() {
       if (this.selectedOrders.length === 0) {
         this.$message.warning('请选择要确认的订单');
         return;
@@ -730,16 +867,47 @@ export default {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then(() => {
-        this.selectedOrders.forEach(order => {
-          order.status = 'confirmed';
-        });
-        this.$message.success('批量确认成功');
+      }).then(async () => {
+        try {
+          const orderIds = this.selectedOrders.map(order => order.orderId);
+          const response = await request.put(`${this.getApiBaseUrl()}/order/batch/confirm`, orderIds);
+          if (response.data.code === 1) {
+            this.$message.success('批量确认成功');
+            this.loadOrders();
+            this.loadOrderStatistics();
+          } else {
+            this.$message.error(response.data.msg || '批量确认失败');
+          }
+        } catch (error) {
+          console.error('批量确认失败:', error);
+          this.$message.error('批量确认失败');
+        }
       });
     },
     
-    exportOrders() {
-      this.$message.success('订单导出成功');
+    async exportOrders() {
+      try {
+        const searchParams = {
+          current: 1,
+          size: 10000,
+          status: this.filters.status || null,
+          productType: this.filters.productType || null,
+          keyword: this.filters.keyword || null,
+          startDate: this.filters.dateRange && this.filters.dateRange.length > 0 ? this.filters.dateRange[0] : null,
+          endDate: this.filters.dateRange && this.filters.dateRange.length > 1 ? this.filters.dateRange[1] : null
+        };
+
+        const response = await request.post(`${this.getApiBaseUrl()}/order/export`, searchParams);
+        if (response.data.code === 1) {
+          this.$message.success('订单导出成功');
+          // 这里可以添加实际的导出逻辑，比如下载文件
+        } else {
+          this.$message.error(response.data.msg || '订单导出失败');
+        }
+      } catch (error) {
+        console.error('导出订单失败:', error);
+        this.$message.error('订单导出失败');
+      }
     },
     
     printOrder() {
@@ -756,10 +924,13 @@ export default {
     
     handleSizeChange(val) {
       this.pagination.pageSize = val;
+      this.pagination.currentPage = 1;
+      this.loadOrders();
     },
     
     handleCurrentChange(val) {
       this.pagination.currentPage = val;
+      this.loadOrders();
     }
   }
 }
@@ -767,165 +938,588 @@ export default {
 
 <style scoped>
 .order-processing {
-  padding: 20px;
+  padding: 24px;
+  min-height: 100vh;
 }
 
+
 .page-header {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .title {
-  font-size: 24px;
-  color: #333;
+  font-size: 28px;
+  color: #1f2d3d;
   margin-bottom: 8px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
 }
 
 .subtitle {
-  color: #666;
+  color: #8492a6;
   margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
 }
 
-.stats-section {
-  margin-bottom: 30px;
+/* 统计面板样式 */
+.stats-panel {
+  margin-bottom: 24px;
 }
 
 .stat-card {
-  display: flex;
-  align-items: center;
-  padding: 20px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
   transition: all 0.3s ease;
+  border: none;
+  overflow: hidden;
 }
 
 .stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.stat-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 20px;
-}
-
-.stat-icon.pending {
-  background: linear-gradient(135deg, #ff9a9e, #fecfef);
-  color: #d63384;
-}
-
-.stat-icon.confirmed {
-  background: linear-gradient(135deg, #a8edea, #fed6e3);
-  color: #20c997;
-}
-
-.stat-icon.completed {
-  background: linear-gradient(135deg, #d299c2, #fef9d7);
-  color: #28a745;
-}
-
-.stat-icon.refunding {
-  background: linear-gradient(135deg, #89f7fe, #66a6ff);
-  color: #6f42c1;
-}
-
-.stat-icon i {
-  font-size: 24px;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
 }
 
 .stat-content {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+}
+
+.stat-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  font-size: 26px;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stat-icon.pending {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.stat-icon.confirmed {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.stat-icon.completed {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.stat-icon.refunding {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.stat-info {
   flex: 1;
 }
 
-.stat-number {
+.stat-value {
   font-size: 28px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 5px;
+  font-weight: 700;
+  color: #1f2d3d;
+  margin-bottom: 6px;
+  line-height: 1;
 }
 
 .stat-label {
   font-size: 14px;
-  color: #666;
+  color: #8492a6;
+  font-weight: 500;
+}
+
+/* 操作栏样式 */
+.action-bar {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 20px 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.action-buttons-row {
+  display: flex;
+  width: 100%;
+  gap: 0;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.action-btn {
+  flex: 1;
+  margin: 0 !important;
+  border-radius: 8px;
+  font-weight: 500;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+  min-height: 44px;
+  font-size: 14px;
+}
+
+.action-btn:not(:last-child) {
+  margin-right: 12px !important;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn i {
+  font-size: 16px;
+}
+
+.action-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.selected-count {
+  color: #409eff;
+  font-weight: 600;
+  font-size: 14px;
+  background: #f0f9ff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #bae6fd;
 }
 
 .filter-section {
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
+  background: white;
+  border-radius: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f0f2f5;
+  overflow: hidden;
 }
 
-.action-bar {
-  margin-bottom: 20px;
+.filter-container {
+  padding: 0;
 }
 
-.action-bar .el-button {
-  margin-right: 10px;
+.filter-header {
+  background: linear-gradient(135deg, #2c5aa0 0%, #1e3a8a 100%);
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.filter-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.filter-title i {
+  font-size: 20px;
+  color: white;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.search-btn,
+.reset-btn {
+  height: 40px;
+  border-radius: 20px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+  padding: 0 20px;
+  min-width: 100px;
+}
+
+.search-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.search-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.reset-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.reset-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.filter-content {
+  padding: 24px;
+  background: #fafbfc;
+}
+
+.filter-row {
+  display: flex;
+  gap: 16px;
+  margin: 0;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+  max-width: 280px;
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.filter-label i {
+  color: #3b82f6;
+  font-size: 16px;
+}
+
+.filter-select,
+.filter-input,
+.filter-date-picker {
+  width: 100%;
+}
+
+.filter-select .el-input__inner,
+.filter-input .el-input__inner,
+.filter-date-picker .el-input__inner {
+  border-radius: 10px;
+  border: 2px solid #e1e6eb;
+  transition: all 0.3s ease;
+  height: 44px;
+  line-height: 44px;
+  font-size: 14px;
+  background: #fafbfc;
+}
+
+.filter-select .el-input__inner:focus,
+.filter-input .el-input__inner:focus,
+.filter-date-picker .el-input__inner:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background: white;
+}
+
+.filter-select .el-input__inner:hover,
+.filter-input .el-input__inner:hover,
+.filter-date-picker .el-input__inner:hover {
+  border-color: #c0c4cc;
+  background: white;
+}
+
+/* 日期选择器特殊样式 */
+.date-filter-item {
+  flex: 1.5 !important;
+  min-width: 320px !important;
+  max-width: 400px !important;
+}
+
+.filter-date-picker {
+  width: 100% !important;
+  min-width: 320px !important;
+}
+
+.filter-date-picker .el-range-editor {
+  width: 100% !important;
+  min-width: 320px !important;
+  height: 40px !important;
+  line-height: 40px !important;
+  border-radius: 8px !important;
+  border: 1px solid #dcdfe6 !important;
+  background: white !important;
+  transition: all 0.3s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 12px !important;
+  box-sizing: border-box !important;
+}
+
+.filter-date-picker .el-range-editor:hover {
+  border-color: #c0c4cc !important;
+}
+
+.filter-date-picker .el-range-editor.is-active,
+.filter-date-picker .el-range-editor:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+}
+
+.filter-date-picker .el-range-input {
+  font-size: 14px !important;
+  color: #606266 !important;
+  background: transparent !important;
+  flex: 1 !important;
+  min-width: 120px !important;
+  height: 36px !important;
+  line-height: 36px !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.filter-date-picker .el-range-input::placeholder {
+  color: #c0c4cc !important;
+  font-size: 14px !important;
+}
+
+.filter-date-picker .el-range-separator {
+  color: #606266 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  padding: 0 16px !important;
+  line-height: 36px !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  min-width: 32px !important;
+  text-align: center !important;
+  display: inline-block !important;
+}
+
+.filter-date-picker .el-range__close-icon {
+  margin-left: 8px !important;
+  flex-shrink: 0 !important;
 }
 
 .order-list {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
 }
 
 .product-info {
   display: flex;
   align-items: center;
+  padding: 8px 0;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .product-image {
-  width: 60px;
-  height: 60px;
+  width: 64px;
+  height: 64px;
   object-fit: cover;
-  border-radius: 4px;
-  margin-right: 12px;
+  border-radius: 8px;
+  margin-right: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.image-slot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background: #f5f7fa;
+  color: #909399;
+  font-size: 20px;
 }
 
 .product-details {
   flex: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .product-name {
-  font-weight: 500;
-  margin-bottom: 4px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #1f2d3d;
+  font-size: 15px;
+  line-height: 1.4;
+  text-align: center;
+  width: 100%;
 }
 
 .product-type {
-  margin-top: 4px;
+  margin-top: 6px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-type .el-tag {
+  margin: 0;
+  border-radius: 20px;
+  padding: 4px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  line-height: 1;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 12px;
 }
 
 .amount {
-  font-weight: bold;
+  font-weight: 600;
   color: #e6a23c;
+  font-size: 15px;
 }
 
 .pagination {
   text-align: center;
+  padding: 24px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
+/* 操作按钮样式 */
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.action-btn {
+  margin: 0 !important;
+  padding: 6px 10px !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  min-width: auto !important;
+  height: 28px !important;
+  line-height: 1 !important;
+  transition: all 0.2s ease !important;
+  border: 1px solid transparent !important;
+}
+
+.action-btn:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.action-btn i {
+  margin-right: 4px;
+  font-size: 12px;
+}
+
+/* 按钮类型样式 */
+.detail-btn {
+  background: #f8f9fa !important;
+  color: #495057 !important;
+  border-color: #dee2e6 !important;
+}
+
+.detail-btn:hover {
+  background: #e9ecef !important;
+  border-color: #adb5bd !important;
+}
+
+.confirm-btn {
+  background: #28a745 !important;
+  border-color: #28a745 !important;
+}
+
+.confirm-btn:hover {
+  background: #218838 !important;
+  border-color: #1e7e34 !important;
+}
+
+.complete-btn {
+  background: #ffc107 !important;
+  color: #212529 !important;
+  border-color: #ffc107 !important;
+}
+
+.complete-btn:hover {
+  background: #e0a800 !important;
+  border-color: #d39e00 !important;
+}
+
+.refund-btn {
+  background: #dc3545 !important;
+  border-color: #dc3545 !important;
+}
+
+.refund-btn:hover {
+  background: #c82333 !important;
+  border-color: #bd2130 !important;
+}
+
+/* 弹窗样式 */
 .order-detail {
   padding: 20px 0;
 }
 
 .detail-section {
   margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #eee;
+  padding: 24px;
+  background: #fafbfc;
+  border-radius: 8px;
+  border: 1px solid #e1e6eb;
 }
 
 .detail-section:last-child {
-  border-bottom: none;
+  margin-bottom: 0;
 }
 
 .detail-section h3 {
   margin-bottom: 20px;
-  color: #333;
+  color: #2c3e50;
   font-size: 18px;
+  font-weight: 600;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e1e6eb;
 }
 
 .info-item {
@@ -938,7 +1532,7 @@ export default {
   font-weight: 500;
   margin-right: 10px;
   min-width: 100px;
-  color: #666;
+  color: #8492a6;
 }
 
 .product-detail {
@@ -947,6 +1541,7 @@ export default {
   padding: 20px;
   background: #f8f9fa;
   border-radius: 8px;
+  border: 1px solid #e1e6eb;
 }
 
 .product-detail-image {
@@ -955,6 +1550,7 @@ export default {
   object-fit: cover;
   border-radius: 8px;
   margin-right: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .product-detail-info {
@@ -963,11 +1559,12 @@ export default {
 
 .product-detail-info h4 {
   margin: 0 0 10px 0;
-  color: #333;
+  color: #1f2d3d;
+  font-weight: 600;
 }
 
 .product-detail-info p {
-  color: #666;
+  color: #8492a6;
   margin-bottom: 15px;
   line-height: 1.5;
 }
@@ -987,7 +1584,8 @@ export default {
   padding: 20px;
   background: #f8f9fa;
   border-radius: 8px;
-  border-left: 4px solid #007bff;
+  border-left: 4px solid #409eff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
 .change-header,
@@ -995,26 +1593,27 @@ export default {
   display: flex;
   align-items: center;
   margin-bottom: 15px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .change-type,
 .refund-amount {
-  font-weight: 500;
-  margin-right: 15px;
-  color: #333;
+  font-weight: 600;
+  color: #1f2d3d;
+  font-size: 16px;
 }
 
 .change-time,
 .refund-time {
-  margin-right: 15px;
-  color: #666;
+  color: #8492a6;
   font-size: 14px;
 }
 
 .change-content,
 .refund-content {
-  color: #333;
-  line-height: 1.5;
+  color: #2c3e50;
+  line-height: 1.6;
 }
 
 .change-content p,
@@ -1025,14 +1624,314 @@ export default {
 .change-actions,
 .refund-actions {
   margin-top: 15px;
-}
-
-.change-actions .el-button,
-.refund-actions .el-button {
-  margin-right: 10px;
+  display: flex;
+  gap: 8px;
 }
 
 .dialog-footer {
-  text-align: right;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background: white;
+  border-top: 1px solid #e1e6eb;
+}
+
+/* 表格行悬停效果 */
+.el-table tbody tr:hover > td {
+  background-color: #f8f9fa !important;
+}
+
+/* 强制表格内容居中 */
+.el-table td {
+  text-align: center !important;
+}
+
+.el-table th {
+  text-align: center !important;
+}
+
+/* 筛选区域优化 */
+.filter-section .el-select,
+.filter-section .el-input,
+.filter-section .el-date-editor {
+  border-radius: 8px;
+}
+
+.filter-section .el-button {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+/* 统计卡片动画 */
+.stat-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.stat-card:hover::before {
+  left: 100%;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .order-processing {
+    padding: 16px;
+  }
+  
+  .page-header,
+  .action-bar,
+  .filter-section,
+  .order-list,
+  .pagination {
+    margin-bottom: 16px;
+    padding: 16px;
+  }
+  
+  .stats-panel {
+    margin-bottom: 16px;
+  }
+  
+  .stats-panel .el-col {
+    margin-bottom: 12px;
+  }
+  
+  .action-bar {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  .action-buttons-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .action-btn {
+    width: 100%;
+    flex: none;
+    margin-right: 0 !important;
+  }
+  
+  .action-right {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .filter-section .el-col {
+    margin-bottom: 12px;
+  }
+  
+  /* 移动端筛选区域优化 */
+  .filter-header {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px 20px;
+    text-align: center;
+  }
+  
+  .filter-title {
+    font-size: 16px;
+  }
+  
+  .filter-actions {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .search-btn,
+  .reset-btn {
+    flex: 1;
+    min-width: 120px;
+    height: 36px;
+    font-size: 14px;
+  }
+  
+  .filter-content {
+    padding: 16px;
+  }
+  
+  .filter-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .filter-item {
+    min-width: auto;
+    max-width: none;
+  }
+  
+  .date-filter-item {
+    min-width: auto !important;
+    max-width: none !important;
+    flex: none !important;
+  }
+  
+  .filter-group {
+    padding: 16px;
+  }
+  
+  .filter-item {
+    gap: 8px;
+  }
+  
+  .filter-label {
+    font-size: 13px;
+  }
+  
+  .filter-select .el-input__inner,
+  .filter-input .el-input__inner,
+  .filter-date-picker .el-input__inner {
+    height: 40px;
+    line-height: 40px;
+    font-size: 14px;
+  }
+  
+  /* 移动端日期选择器优化 */
+  .filter-date-picker {
+    min-width: auto !important;
+  }
+  
+  .filter-date-picker .el-range-editor {
+    min-width: auto !important;
+    height: 36px !important;
+    line-height: 36px !important;
+    padding: 0 8px !important;
+  }
+  
+  .filter-date-picker .el-range-separator {
+    font-size: 13px !important;
+    padding: 0 12px !important;
+    line-height: 32px !important;
+    min-width: 28px !important;
+  }
+  
+  .filter-date-picker .el-range-input {
+    font-size: 13px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+    min-width: 100px !important;
+  }
+  
+  .filter-date-picker .el-range-input::placeholder {
+    font-size: 13px !important;
+  }
+  
+  .title {
+    font-size: 24px;
+  }
+  
+  .stat-content {
+    padding: 16px;
+  }
+  
+  .stat-icon {
+    width: 56px;
+    height: 56px;
+    font-size: 22px;
+  }
+  
+  .stat-value {
+    font-size: 24px;
+  }
+  
+  /* 移动端操作按钮优化 */
+  .action-buttons {
+    gap: 4px;
+    justify-content: center;
+  }
+  
+  .action-btn {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+    height: 24px !important;
+  }
+  
+  .action-btn i {
+    margin-right: 2px;
+    font-size: 11px;
+  }
+  
+  /* 移动端产品信息优化 */
+  .product-info {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .product-image {
+    margin-right: 0;
+    margin-bottom: 8px;
+  }
+  
+  .product-details {
+    width: 100%;
+  }
+  
+  /* 移动端弹窗优化 */
+  .detail-section {
+    padding: 16px;
+  }
+  
+  .product-detail {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .product-detail-image {
+    margin-right: 0;
+    margin-bottom: 16px;
+  }
+  
+  .change-header,
+  .refund-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .change-actions,
+  .refund-actions {
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dialog-footer {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+/* 弹窗输入框固定大小和去掉右下角图标 */
+.fixed-textarea .el-textarea__inner {
+  resize: none !important;
+  width: 100% !important;
+  min-height: 80px !important;
+  max-height: 80px !important;
+}
+
+.fixed-textarea .el-textarea__inner::-webkit-resizer {
+  display: none !important;
+}
+
+/* 所有弹窗中的输入框 */
+.el-dialog .el-input__inner,
+.el-dialog .el-textarea__inner {
+  width: 100% !important;
+  resize: none !important;
+}
+
+.el-dialog .el-textarea__inner::-webkit-resizer {
+  display: none !important;
 }
 </style>

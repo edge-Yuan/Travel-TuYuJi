@@ -2,112 +2,180 @@
   <div class="data-center">
     <!-- 页面标题 -->
     <div class="page-header">
-      <h1 class="title">数据中心</h1>
-      <p class="subtitle">查看运营数据，分析用户画像，对比竞品数据</p>
+      <div class="header-content">
+        <div class="title-section">
+          <h1 class="title">数据中心</h1>
+          <p class="subtitle">查看运营数据，分析用户画像，对比竞品数据</p>
+        </div>
+        <div class="header-actions">
+          <el-button type="primary" icon="el-icon-refresh" @click="refreshData">刷新数据</el-button>
+          <el-button type="success" icon="el-icon-download" @click="exportReport">导出报表</el-button>
+        </div>
+      </div>
     </div>
 
     <!-- 数据概览 -->
-    <div class="overview-section">
-      <el-row :gutter="20">
-        <el-col :span="6">
-          <div class="overview-card">
-            <div class="card-icon revenue">
-              <i class="el-icon-money"></i>
-            </div>
-            <div class="card-content">
-              <div class="card-number">¥{{ overviewData.totalRevenue }}</div>
-              <div class="card-label">总销售额</div>
-              <div class="card-trend positive">
-                <i class="el-icon-arrow-up"></i> +12.5%
+    <div class="stats-panel">
+      <el-card class="stats-card">
+        <div slot="header" class="stats-header">
+          <i class="el-icon-data-line"></i>
+          <span>数据概览</span>
+        </div>
+        <el-row :gutter="20">
+          <el-col :span="6">
+            <div class="stat-card">
+              <div class="stat-icon revenue">
+                <span style="font-size: 24px; color: white;">¥</span>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number">¥{{ overviewData.totalRevenue }}</div>
+                <div class="stat-label">总销售额</div>
+                <div class="stat-trend">
+                  <i class="el-icon-top"></i>
+                  <span>+12.5%</span>
+                </div>
               </div>
             </div>
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="overview-card">
-            <div class="card-icon orders">
-              <i class="el-icon-tickets"></i>
-            </div>
-            <div class="card-content">
-              <div class="card-number">{{ overviewData.totalOrders }}</div>
-              <div class="card-label">总订单数</div>
-              <div class="card-trend positive">
-                <i class="el-icon-arrow-up"></i> +8.3%
+          </el-col>
+          <el-col :span="6">
+            <div class="stat-card">
+              <div class="stat-icon orders">
+                <i class="el-icon-tickets"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number">{{ overviewData.totalOrders }}</div>
+                <div class="stat-label">总订单数</div>
+                <div class="stat-trend">
+                  <i class="el-icon-top"></i>
+                  <span>+8.3%</span>
+                </div>
               </div>
             </div>
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="overview-card">
-            <div class="card-icon customers">
-              <i class="el-icon-user"></i>
-            </div>
-            <div class="card-content">
-              <div class="card-number">{{ overviewData.totalCustomers }}</div>
-              <div class="card-label">总客户数</div>
-              <div class="card-trend positive">
-                <i class="el-icon-arrow-up"></i> +15.2%
+          </el-col>
+          <el-col :span="6">
+            <div class="stat-card">
+              <div class="stat-icon customers">
+                <i class="el-icon-user"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number">{{ overviewData.totalCustomers }}</div>
+                <div class="stat-label">总客户数</div>
+                <div class="stat-trend">
+                  <i class="el-icon-top"></i>
+                  <span>+15.2%</span>
+                </div>
               </div>
             </div>
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="overview-card">
-            <div class="card-icon rating">
-              <i class="el-icon-star-on"></i>
-            </div>
-            <div class="card-content">
-              <div class="card-number">{{ overviewData.averageRating }}</div>
-              <div class="card-label">平均评分</div>
-              <div class="card-trend positive">
-                <i class="el-icon-arrow-up"></i> +0.2
+          </el-col>
+          <el-col :span="6">
+            <div class="stat-card">
+              <div class="stat-icon rating">
+                <i class="el-icon-star-on"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number">{{ overviewData.averageRating }}</div>
+                <div class="stat-label">平均评分</div>
+                <div class="stat-trend">
+                  <i class="el-icon-top"></i>
+                  <span>+0.2</span>
+                </div>
               </div>
             </div>
-          </div>
-        </el-col>
-      </el-row>
+          </el-col>
+        </el-row>
+      </el-card>
     </div>
 
-    <!-- 时间筛选 -->
+    <!-- 筛选条件 -->
     <div class="filter-section">
-      <el-row :gutter="20">
-        <el-col :span="6">
-          <el-date-picker
-            v-model="dateRange"
-            type="daterange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            @change="handleDateChange">
-          </el-date-picker>
-        </el-col>
-        <el-col :span="4">
-          <el-select v-model="timeType" placeholder="时间类型" @change="handleTimeTypeChange">
-            <el-option label="按日" value="day"></el-option>
-            <el-option label="按周" value="week"></el-option>
-            <el-option label="按月" value="month"></el-option>
-            <el-option label="按季度" value="quarter"></el-option>
-          </el-select>
-        </el-col>
-        <el-col :span="4">
-          <el-select v-model="productType" placeholder="产品类型" @change="handleProductTypeChange">
-            <el-option label="全部" value=""></el-option>
-            <el-option label="酒店客房" value="hotel"></el-option>
-            <el-option label="旅行路线" value="route"></el-option>
-            <el-option label="门票" value="ticket"></el-option>
-          </el-select>
-        </el-col>
-        <el-col :span="4">
-          <el-button type="primary" @click="refreshData">
-            <i class="el-icon-refresh"></i> 刷新数据
-          </el-button>
-        </el-col>
-        <el-col :span="6">
-          <el-button type="success" @click="exportReport">
-            <i class="el-icon-download"></i> 导出报表
-          </el-button>
-        </el-col>
-      </el-row>
+      <el-card class="filter-card">
+        <div class="filter-container">
+          <div class="filter-header">
+            <div class="filter-title">
+              <i class="el-icon-filter"></i>
+              <span>筛选条件</span>
+            </div>
+            <div class="filter-actions">
+              <el-button type="primary" class="search-btn" @click="refreshData">
+                <i class="el-icon-search"></i>
+                查询
+              </el-button>
+              <el-button class="reset-btn" @click="resetFilters">
+                <i class="el-icon-refresh"></i>
+                重置
+              </el-button>
+            </div>
+          </div>
+          
+          <div class="filter-content">
+            <div class="filter-row">
+              <div class="filter-item date-filter-item">
+                <div class="filter-label">
+                  <i class="el-icon-date"></i>
+                  <span>时间范围</span>
+                </div>
+                <el-date-picker
+                  v-model="dateRange"
+                  type="daterange"
+                  range-separator="至"
+                  start-placeholder="开始日期"
+                  end-placeholder="结束日期"
+                  class="filter-date-picker"
+                  style="width: 100%; min-width: 320px;"
+                  @change="handleDateChange">
+                </el-date-picker>
+              </div>
+              
+              <div class="filter-item">
+                <div class="filter-label">
+                  <i class="el-icon-time"></i>
+                  <span>时间类型</span>
+                </div>
+                <el-select v-model="timeType" placeholder="请选择时间类型" clearable class="filter-select" @change="handleTimeTypeChange">
+                  <el-option label="按日" value="day">
+                    <span style="float: left">按日</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">每日数据</span>
+                  </el-option>
+                  <el-option label="按周" value="week">
+                    <span style="float: left">按周</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">每周数据</span>
+                  </el-option>
+                  <el-option label="按月" value="month">
+                    <span style="float: left">按月</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">每月数据</span>
+                  </el-option>
+                  <el-option label="按季度" value="quarter">
+                    <span style="float: left">按季度</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">每季度数据</span>
+                  </el-option>
+                </el-select>
+              </div>
+              
+              <div class="filter-item">
+                <div class="filter-label">
+                  <i class="el-icon-goods"></i>
+                  <span>产品类型</span>
+                </div>
+                <el-select v-model="productType" placeholder="请选择产品类型" clearable class="filter-select" @change="handleProductTypeChange">
+                  <el-option label="全部类型" value=""></el-option>
+                  <el-option label="酒店客房" value="hotel">
+                    <span style="float: left">酒店客房</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">住宿服务</span>
+                  </el-option>
+                  <el-option label="旅行路线" value="route">
+                    <span style="float: left">旅行路线</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">旅游套餐</span>
+                  </el-option>
+                  <el-option label="门票" value="ticket">
+                    <span style="float: left">门票</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">景点门票</span>
+                  </el-option>
+                </el-select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </el-card>
     </div>
 
     <!-- 图表区域 -->
@@ -196,24 +264,24 @@
               <el-button type="primary" size="small" @click="exportSalesData">导出数据</el-button>
             </div>
             <el-table :data="salesData" stripe>
-              <el-table-column prop="date" label="日期" width="120"></el-table-column>
-              <el-table-column prop="revenue" label="销售额" width="120">
-                <template slot-scope="scope">
-                  <span class="amount">¥{{ scope.row.revenue }}</span>
-                </template>
-              </el-table-column>
-              <el-table-column prop="orders" label="订单数" width="100"></el-table-column>
-              <el-table-column prop="customers" label="客户数" width="100"></el-table-column>
-              <el-table-column prop="avgOrderValue" label="客单价" width="120">
-                <template slot-scope="scope">
-                  <span class="amount">¥{{ scope.row.avgOrderValue }}</span>
-                </template>
-              </el-table-column>
-              <el-table-column prop="conversionRate" label="转化率" width="100">
-                <template slot-scope="scope">
-                  <span class="percentage">{{ scope.row.conversionRate }}%</span>
-                </template>
-              </el-table-column>
+                <el-table-column prop="date" label="日期" width="120" align="center"></el-table-column>
+                <el-table-column prop="revenue" label="销售额" width="120" align="center">
+                  <template slot-scope="scope">
+                    <span class="amount">¥{{ scope.row.revenue }}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="orders" label="订单数" width="100" align="center"></el-table-column>
+                <el-table-column prop="customers" label="客户数" width="100" align="center"></el-table-column>
+                <el-table-column prop="avgOrderValue" label="客单价" width="120" align="center">
+                  <template slot-scope="scope">
+                    <span class="amount">¥{{ scope.row.avgOrderValue }}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="conversionRate" label="转化率" width="100" align="center">
+                  <template slot-scope="scope">
+                    <span class="percentage">{{ scope.row.conversionRate }}%</span>
+                  </template>
+                </el-table-column>
             </el-table>
           </div>
         </el-tab-pane>
@@ -333,7 +401,7 @@
         <el-col :span="8">
           <div class="insight-card">
             <div class="insight-icon info">
-              <i class="el-icon-lightbulb"></i>
+              <i class="el-icon-edit-outline"></i>
             </div>
             <div class="insight-content">
               <h4>改进建议</h4>
@@ -437,6 +505,13 @@ export default {
       this.initCharts();
     },
     
+    resetFilters() {
+      this.dateRange = [new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), new Date()];
+      this.timeType = 'day';
+      this.productType = '';
+      this.$message.success('筛选条件已重置');
+    },
+    
     exportReport() {
       this.$message.success('报表导出成功');
     },
@@ -494,112 +569,366 @@ export default {
 
 <style scoped>
 .data-center {
-  padding: 20px;
+  padding: 24px;
+  min-height: 100vh;
 }
 
+
+/* 页面标题 */
 .page-header {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title-section {
+  flex: 1;
 }
 
 .title {
-  font-size: 24px;
-  color: #333;
-  margin-bottom: 8px;
+  font-size: 28px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 8px 0;
 }
 
 .subtitle {
-  color: #666;
+  color: #7f8c8d;
   margin: 0;
+  font-size: 14px;
 }
 
-.overview-section {
-  margin-bottom: 30px;
+.header-actions {
+  display: flex;
+  gap: 12px;
 }
 
-.overview-card {
+/* 统计面板 */
+.stats-panel {
+  margin-bottom: 24px;
+}
+
+.stats-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: none;
+}
+
+.stats-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.stats-header i {
+  color: #3b82f6;
+}
+
+.stat-card {
   display: flex;
   align-items: center;
   padding: 20px;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
+  border: 1px solid #f0f2f5;
 }
 
-.overview-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: #e1e6eb;
 }
 
-.card-icon {
+.stat-icon {
   width: 60px;
   height: 60px;
-  border-radius: 50%;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 20px;
+  position: relative;
+  overflow: hidden;
 }
 
-.card-icon.revenue {
-  background: linear-gradient(135deg, #ff9a9e, #fecfef);
-  color: #d63384;
+.stat-icon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+  border-radius: 12px;
 }
 
-.card-icon.orders {
-  background: linear-gradient(135deg, #a8edea, #fed6e3);
-  color: #20c997;
+.stat-icon.revenue {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
 }
 
-.card-icon.customers {
-  background: linear-gradient(135deg, #d299c2, #fef9d7);
-  color: #28a745;
+.stat-icon.orders {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
 }
 
-.card-icon.rating {
-  background: linear-gradient(135deg, #89f7fe, #66a6ff);
-  color: #6f42c1;
+.stat-icon.customers {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
 }
 
-.card-icon i {
+.stat-icon.rating {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  color: white;
+}
+
+.stat-icon i {
   font-size: 24px;
+  position: relative;
+  z-index: 1;
 }
 
-.card-content {
+/* 确保图标正确显示 */
+.stat-icon.revenue i.el-icon-coin {
+  font-size: 24px !important;
+  color: white !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* 备用图标样式 */
+.stat-icon.revenue i {
+  font-size: 24px !important;
+  color: white !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.stat-content {
   flex: 1;
 }
 
-.card-number {
-  font-size: 28px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 5px;
+.stat-number {
+  font-size: 32px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 4px;
+  line-height: 1;
 }
 
-.card-label {
+.stat-label {
   font-size: 14px;
-  color: #666;
-  margin-bottom: 5px;
+  color: #7f8c8d;
+  margin-bottom: 8px;
 }
 
-.card-trend {
+.stat-trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 12px;
   font-weight: 500;
 }
 
-.card-trend.positive {
-  color: #28a745;
+.stat-trend i {
+  font-size: 12px;
 }
 
-.card-trend.negative {
-  color: #dc3545;
+.stat-trend .el-icon-top {
+  color: #52c41a;
 }
 
+.stat-trend .el-icon-bottom {
+  color: #ff4d4f;
+}
+
+/* 筛选区域 */
 .filter-section {
-  background: #f8f9fa;
-  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.filter-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: none;
+  overflow: hidden;
+}
+
+.filter-container {
+  padding: 0;
+}
+
+.filter-header {
+  background: linear-gradient(135deg, #2c5aa0 0%, #1e3a8a 100%);
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.filter-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.search-btn,
+.reset-btn {
+  height: 40px;
+  border-radius: 20px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+  padding: 0 20px;
+  min-width: 100px;
+}
+
+.search-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.search-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.reset-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.reset-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.filter-content {
+  padding: 24px;
+  background: #fafbfc;
+}
+
+.filter-row {
+  display: flex;
+  gap: 16px;
+  margin: 0;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+  max-width: 280px;
+}
+
+.date-filter-item {
+  flex: 1.5 !important;
+  min-width: 320px !important;
+  max-width: 400px !important;
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.filter-label i {
+  color: #3b82f6;
+  font-size: 16px;
+}
+
+.filter-select,
+.filter-date-picker {
+  width: 100%;
+}
+
+.filter-select .el-input__inner,
+.filter-date-picker .el-input__inner {
+  height: 44px;
+  line-height: 44px;
   border-radius: 8px;
-  margin-bottom: 30px;
+  border: 1px solid #dcdfe6;
+  background: #fafbfc;
+  transition: all 0.3s ease;
+}
+
+.filter-select .el-input__inner:focus,
+.filter-date-picker .el-input__inner:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background: white;
+}
+
+.filter-select .el-input__inner:hover,
+.filter-date-picker .el-input__inner:hover {
+  border-color: #c0c4cc;
+  background: white;
+}
+
+/* 日期选择器特殊样式 */
+.filter-date-picker .el-range-editor {
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  min-width: 320px !important;
+}
+
+.filter-date-picker .el-range-input {
+  min-width: 120px !important;
+  flex: 1;
+}
+
+.filter-date-picker .el-range-separator {
+  padding: 0 16px !important;
+  min-width: 32px !important;
+  display: inline-block !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
 }
 
 .charts-section {
@@ -666,6 +995,56 @@ export default {
   color: #409EFF;
 }
 
+/* 确保表格内容居中 */
+.table-section .el-table th,
+.table-section .el-table td {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* 强制表格内容居中 */
+.data-tables .el-table th,
+.data-tables .el-table td {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.data-tables .el-table .cell {
+  text-align: center !important;
+  justify-content: center !important;
+}
+
+/* 全局表格居中样式 */
+.el-table th,
+.el-table td {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.el-table .cell {
+  text-align: center !important;
+  justify-content: center !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* 强制所有表格内容居中 */
+.data-center .el-table th,
+.data-center .el-table td,
+.data-center .el-table .cell {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.data-center .el-table .cell {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+
+
+
 .advantage-tag {
   margin-right: 5px;
   margin-bottom: 5px;
@@ -690,6 +1069,16 @@ export default {
   padding: 30px;
 }
 
+.insights-section .el-row {
+  display: flex;
+  align-items: stretch;
+}
+
+.insights-section .el-col {
+  display: flex;
+  flex-direction: column;
+}
+
 .insights-section h3 {
   margin: 0 0 20px 0;
   color: #333;
@@ -703,6 +1092,8 @@ export default {
   background: #f8f9fa;
   border-radius: 8px;
   transition: all 0.3s ease;
+  height: 100%;
+  min-height: 140px;
 }
 
 .insight-card:hover {
@@ -738,10 +1129,25 @@ export default {
 
 .insight-icon i {
   font-size: 20px;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* 确保info图标显示 */
+.insight-icon.info i.el-icon-edit-outline {
+  font-size: 20px !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .insight-content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
 }
 
 .insight-content h4 {

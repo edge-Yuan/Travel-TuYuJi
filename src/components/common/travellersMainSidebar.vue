@@ -30,11 +30,11 @@ export default {
                     url: 'traveller/packageDetail'
                 },
                 {
-                    path: '/traveller/order',
+                    path: '/traveller/attractions',
                     name: '景点推荐',
                     label: '景点推荐',
-                    icon: 'el-icon-shopping-bag-2',
-                    url: 'traveller/order'
+                    icon: 'el-icon-discover',
+                    url: 'traveller/attractions'
                 }, {
                     path: '/traveller/routesmanage',
                     name: '行程管理',
@@ -68,6 +68,13 @@ export default {
                     label: '我的收藏',
                     icon: 'el-icon-collection-tag',
                     url: 'traveller/mycollection'
+                },
+                {
+                    path: '/traveller/evaluationHistory',
+                    name: '我的评价',
+                    label: '我的评价',
+                    icon: 'el-icon-star-on',
+                    url: 'traveller/evaluationHistory'
                 },
                 {
                     path: '/traveller/myinfo',

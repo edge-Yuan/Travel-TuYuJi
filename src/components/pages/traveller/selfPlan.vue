@@ -1,6 +1,5 @@
 <template>
   <div class="self-plan-container">
-    <!-- 顶部Banner -->
     <div class="banner-section">
       <div class="banner-content">
         <h1 class="banner-title">探索世界，定制专属旅程</h1>
@@ -9,16 +8,13 @@
     </div>
 
     <el-row>
-      <!-- 左侧 -->
       <el-col :span="8" style="padding: 10px;">
         <div class="grid-content bg-purple">
-          <!-- 热门目的地 -->
           <el-card class="popular-destinations-card" shadow="hover">
             <div slot="header" class="card-header">
               <h3 class="card-title">热门目的地</h3>
             </div>
-            <el-carousel :interval="5000" type="card" height="180px" indicator-position="none"
-              class="destinations-carousel">
+            <el-carousel :interval="5000" type="card" height="180px" indicator-position="none" class="destinations-carousel">
               <el-carousel-item v-for="dest in hotDestinations" :key="dest.id">
                 <div class="destination-item" @click="selectDestination(dest.name)">
                   <img :src="dest.image" :alt="dest.name" class="dest-image" />
@@ -34,7 +30,6 @@
             </el-carousel>
           </el-card>
 
-          <!-- 使用指南 -->
           <el-card class="help-card" shadow="hover">
             <div slot="header" class="card-header">
               <h3 class="card-title">使用指南</h3>
@@ -57,7 +52,6 @@
         </div>
       </el-col>
 
-      <!-- 右侧 -->
       <el-col :span="16">
         <div class="grid-content bg-purple-light">
           <div style="margin-top: 8px;">
@@ -66,23 +60,19 @@
                 <h2 class="plan-title">旅行规划</h2>
               </div>
 
-              <!-- Tabs -->
               <el-tabs v-model="activeTab" class="custom-tabs" tab-position="top">
-                <!-- 路线规划 -->
                 <el-tab-pane label="路线规划" name="route" class="tab-pane">
                   <div class="route-planner">
                     <el-card class="route-form-card" shadow="never">
                       <el-form :model="routeForm" label-width="100px" class="route-form">
                         <el-form-item label="目的地">
                           <el-select v-model="routeForm.destination" placeholder="选择目的地" clearable class="form-control">
-                            <el-option v-for="dest in hotDestinations" :key="dest.id" :label="dest.name"
-                              :value="dest.name" />
+                            <el-option v-for="dest in hotDestinations" :key="dest.id" :label="dest.name" :value="dest.name" />
                           </el-select>
                         </el-form-item>
 
                         <el-form-item label="旅行天数">
-                          <el-slider v-model="routeForm.days" :min="1" :max="15" :step="1" show-input
-                            class="form-control" />
+                          <el-slider v-model="routeForm.days" :min="1" :max="15" :step="1" show-input class="form-control" />
                         </el-form-item>
 
                         <el-form-item label="预算范围">
@@ -115,6 +105,9 @@
                           <el-button type="primary" @click="generateRoute" :loading="routeLoading" class="generate-btn">
                             <i class="el-icon-map-location"></i> 生成路线
                           </el-button>
+                          <el-button type="success" @click="generateRouteUsingAI" :loading="aiLoading" class="save-btn">
+                            <i class="el-icon-magic-stick"></i> 使用AI生成
+                          </el-button>
                           <el-button @click="saveRoute" :disabled="!routeResult" class="save-btn">
                             <i class="el-icon-save"></i> 保存路线
                           </el-button>
@@ -124,7 +117,6 @@
                   </div>
                 </el-tab-pane>
 
-                <!-- 导游匹配 -->
                 <el-tab-pane label="导游匹配" name="guide" class="tab-pane">
                   <div class="guide-matcher">
                     <el-card class="guide-filter-card" shadow="never">
@@ -147,8 +139,7 @@
                         </el-form-item>
 
                         <el-form-item label="价格区间">
-                          <el-slider v-model="guideFilter.priceRange" range :min="100" :max="2000" :step="50"
-                            show-stops />
+                          <el-slider v-model="guideFilter.priceRange" range :min="100" :max="2000" :step="50" show-stops />
                         </el-form-item>
 
                         <el-form-item label="最低评分">
@@ -179,19 +170,17 @@
       </el-col>
     </el-row>
 
-    <!-- 路线结果 -->
     <el-row>
       <el-col :span="24">
         <div class="grid-content bg-purple-dark">
-          <div v-if="activeTab === 'route' && (routeLoading || routeResult)" class="route-results-section"
-            style="margin-top: 20px;">
+          <div v-if="activeTab === 'route' && (routeLoading || routeResult)" class="route-results-section" style="margin-top: 20px;">
             <el-card shadow="hover" style="width: 100%;">
               <div slot="header" class="card-header">
                 <h3 class="card-title">推荐路线</h3>
               </div>
 
               <div v-if="routeLoading" class="loading-container">
-                <el-loading-spinner class="loading-spinner"></el-loading-spinner>
+                <i class="el-icon-loading loading-spinner"></i>
                 <p class="loading-text">正在为您规划最佳路线...</p>
               </div>
 
@@ -201,22 +190,13 @@
                 </el-tag>
                 <div class="route-preview">
                   <el-timeline class="route-timeline">
-                    <el-timeline-item v-for="(day, index) in routeResult.days" :key="index"
-                      :timestamp="`第${index + 1}天`" placement="top">
+                    <el-timeline-item v-for="(day, index) in routeResult.days" :key="index" :timestamp="`第${index + 1}天`" placement="top">
                       <el-card class="day-card">
                         <div class="day-plan">
-                          <div class="plan-item"><span class="time-label">上午</span>
-                            <p>{{ day.activities[0] }}</p>
-                          </div>
-                          <div class="plan-item"><span class="time-label">中午</span>
-                            <p>{{ day.activities[1] }}</p>
-                          </div>
-                          <div class="plan-item"><span class="time-label">下午</span>
-                            <p>{{ day.activities[2] }}</p>
-                          </div>
-                          <div class="plan-item"><span class="time-label">晚上</span>
-                            <p>{{ day.activities[3] }}</p>
-                          </div>
+                          <div class="plan-item"><span class="time-label">上午</span><p>{{ day.activities[0] }}</p></div>
+                          <div class="plan-item"><span class="time-label">中午</span><p>{{ day.activities[1] }}</p></div>
+                          <div class="plan-item"><span class="time-label">下午</span><p>{{ day.activities[2] }}</p></div>
+                          <div class="plan-item"><span class="time-label">晚上</span><p>{{ day.activities[3] }}</p></div>
                         </div>
                       </el-card>
                     </el-timeline-item>
@@ -231,42 +211,39 @@
             </el-card>
           </div>
 
-          <div v-if="activeTab === 'guide' && (guideLoading || filteredGuides)" class="grid-content bg-purple-dark"
-            style="margin-top: 20px;">
+          <div v-if="activeTab === 'guide' && (guideLoading || filteredGuides)" class="grid-content bg-purple-dark" style="margin-top: 20px;">
             <el-card shadow="hover" style="width: 100%;">
               <div slot="header" class="card-header">
                 <h3 class="card-title">导游搜索结果</h3>
               </div>
 
-              <!-- 加载状态 -->
               <div v-if="guideLoading" class="loading-container">
-                <el-loading-spinner class="loading-spinner"></el-loading-spinner>
+                <i class="el-icon-loading loading-spinner"></i>
                 <p class="loading-text">正在为您筛选导游...</p>
               </div>
 
-              <!-- 结果列表 -->
               <div v-else class="guide-list">
                 <div v-if="filteredGuides.length === 0" class="empty-state">
                   <el-empty description="暂无符合条件的导游" :image="elEmptyImage"></el-empty>
                 </div>
 
-                <el-card v-for="guide in filteredGuides" :key="guide.id" class="guide-card" shadow="hover">
+                <el-card v-for="guide in filteredGuides" :key="guide.guideId" class="guide-card" shadow="hover">
                   <div class="guide-info">
                     <div class="guide-avatar">
-                      <img :src="guide.avatar" :alt="guide.name" class="avatar-img" />
+                      <img :src="getGuideAvatar(guide)" :alt="guide.realName" class="avatar-img" />
                     </div>
                     <div class="guide-details">
-                      <h3 class="guide-name">{{ guide.name }}</h3>
+                      <h3 class="guide-name">{{ guide.realName || '匿名导游' }}</h3>
                       <div class="guide-meta">
-                        <span class="meta-item"><i class="el-icon-message"></i> {{ guide.language }}</span>
-                        <span class="meta-item"><i class="el-icon-trophy"></i> {{ guide.specialty }}</span>
+                        <span class="meta-item"><i class="el-icon-message"></i> {{ formatServiceLang(guide.serviceLang) }}</span>
+                        <span class="meta-item"><i class="el-icon-trophy"></i> {{ guide.goodAtArea || guide.location || '-' }}</span>
                       </div>
                       <div class="guide-price">
-                        <span class="price-text">¥{{ guide.price }}/天</span>
+                        <span class="price-text">¥{{ guide.baseFee || 0 }}/天</span>
                       </div>
                     </div>
                     <div class="guide-rating">
-                      <el-rate v-model="guide.rating" disabled show-score />
+                      <el-rate :value="toNumber(guide.serviceScore)" disabled show-score />
                     </div>
                   </div>
 
@@ -282,27 +259,22 @@
       </el-col>
     </el-row>
 
-    <!-- 导游详情弹窗 -->
-    <el-dialog v-model="detailDialogVisible" :title="selectedGuide?.name || '导游详情'" width="600px" center>
+    <el-dialog v-model="detailDialogVisible" :title="selectedGuide?.realName || '导游详情'" width="600px" center>
       <div v-if="selectedGuide" class="guide-detail-content">
         <div class="detail-header">
-          <img :src="selectedGuide.avatar" :alt="selectedGuide.name" class="detail-avatar" />
+          <img :src="getGuideAvatar(selectedGuide)" :alt="selectedGuide.realName" class="detail-avatar" />
           <div class="detail-info">
-            <h3 class="detail-name">{{ selectedGuide.name }}</h3>
+            <h3 class="detail-name">{{ selectedGuide.realName || '匿名导游' }}</h3>
             <div class="detail-rating">
-              <el-rate v-model="selectedGuide.rating" disabled show-score />
+              <el-rate :value="toNumber(selectedGuide.serviceScore)" disabled show-score />
             </div>
           </div>
         </div>
         <div class="detail-body">
-          <div class="detail-item"><span class="detail-label">语言：</span><span class="detail-value">{{
-            selectedGuide.language }}</span></div>
-          <div class="detail-item"><span class="detail-label">专长：</span><span class="detail-value">{{
-            selectedGuide.specialty }}</span></div>
-          <div class="detail-item"><span class="detail-label">价格：</span><span class="detail-value price-highlight">¥{{
-            selectedGuide.price }}/天</span></div>
-          <div class="detail-item"><span class="detail-label">简介：</span><span class="detail-value">{{
-            selectedGuide.description || "暂无简介" }}</span></div>
+          <div class="detail-item"><span class="detail-label">语言：</span><span class="detail-value">{{ formatServiceLang(selectedGuide.serviceLang) }}</span></div>
+          <div class="detail-item"><span class="detail-label">专长：</span><span class="detail-value">{{ selectedGuide.goodAtArea || '-' }}</span></div>
+          <div class="detail-item"><span class="detail-label">价格：</span><span class="detail-value price-highlight">¥{{ selectedGuide.baseFee || 0 }}/天</span></div>
+          <div class="detail-item"><span class="detail-label">地区：</span><span class="detail-value">{{ selectedGuide.location || '-' }}</span></div>
         </div>
       </div>
       <template #footer>
@@ -311,15 +283,18 @@
       </template>
     </el-dialog>
   </div>
-</template>
+  </template>
+
 <script>
+import request from '@/utils/request'
 export default {
   name: "SelfPlan",
   data() {
     return {
       activeTab: "route",
+      currentUserId: null,
+      aiLoading: false,
 
-      // 路线规划
       hotDestinations: [
         { id: 1, name: "北京", image: "https://picsum.photos/id/10/400/200", rating: 4.8 },
         { id: 2, name: "上海", image: "https://picsum.photos/id/20/400/200", rating: 4.7 },
@@ -329,14 +304,13 @@ export default {
       routeForm: {
         destination: "",
         days: 3,
-        budget: "medium", // economic, medium, luxury
+        budget: "medium",
         interests: [],
         accommodation: "经济型",
       },
       routeResult: null,
       routeLoading: false,
 
-      // 导游匹配
       guideFilter: {
         language: "",
         specialty: "",
@@ -344,52 +318,10 @@ export default {
         minRating: 0,
         sortBy: "rating",
       },
-      guides: [
-        {
-          id: 1,
-          name: "张伟",
-          avatar: "https://picsum.photos/id/101/100/100",
-          language: "中文",
-          specialty: "历史文化",
-          price: 500,
-          rating: 4.5,
-          description: "拥有10年导游经验，擅长讲解北京故宫和长城历史，对中国传统文化有深入研究。",
-        },
-        {
-          id: 2,
-          name: "John",
-          avatar: "https://picsum.photos/id/102/100/100",
-          language: "英文",
-          specialty: "自然探索",
-          price: 800,
-          rating: 4.8,
-          description: "资深户外探险导游，熟悉自然景观，曾带领多个探险队深入中国各地自然保护区。",
-        },
-        {
-          id: 3,
-          name: "佐藤",
-          avatar: "https://picsum.photos/id/103/100/100",
-          language: "日语",
-          specialty: "美食体验",
-          price: 600,
-          rating: 4.2,
-          description: "精通中国美食文化，带你品尝地道风味，了解每道菜品背后的历史和文化故事。",
-        },
-        {
-          id: 4,
-          name: "李明",
-          avatar: "https://picsum.photos/id/104/100/100",
-          language: "中文",
-          specialty: "自然探索",
-          price: 700,
-          rating: 4.6,
-          description: "专业自然摄影师，熟知各地自然景观最佳观赏点，为您带来独特的摄影视角。",
-        },
-      ],
+      guides: [],
       filteredGuides: [],
       guideLoading: false,
 
-      // 详情弹窗
       detailDialogVisible: false,
       selectedGuide: null,
       elEmptyImage: 'https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png'
@@ -406,38 +338,83 @@ export default {
     },
     getInterestsText() {
       if (!this.routeForm.interests.length) return '未设置'
-
-      const interestMap = {
-        food: '美食',
-        history: '历史',
-        nature: '自然',
-        shopping: '购物',
-        art: '艺术'
-      }
-
+      const interestMap = { food: '美食', history: '历史', nature: '自然', shopping: '购物', art: '艺术' }
       return this.routeForm.interests.map(interest => interestMap[interest]).join('、')
     }
   },
   methods: {
+    async generateRouteUsingAI() {
+      if (!this.routeForm.destination) { this.$message.warning('请选择目的地'); return }
+      if (!this.routeForm.interests.length) { this.$message.warning('请至少选择一个兴趣偏好'); return }
+      this.aiLoading = true
+      try {
+        const prompt = {
+          destination: this.routeForm.destination,
+          days: this.routeForm.days,
+          budget: this.routeForm.budget,
+          interests: this.routeForm.interests,
+          accommodation: this.routeForm.accommodation
+        }
+        // 约定：后端提供代理 POST /travel-portal/ai/planRoute，返回 { days: [{ activities: [am, noon, pm, night] }, ...] }
+        const data = await request.post('/travel-portal/ai/planRoute', prompt, { timeout: 25000 })
+        if (!data || !Array.isArray(data.days) || data.days.length === 0) throw new Error('AI返回数据格式不正确')
+        this.routeResult = data
+        this.$message.success('AI 已为您生成专属行程')
+      } catch (e) {
+        this.$message.error(e.message || 'AI 生成失败，已回退到本地生成')
+        // 回退：调用本地生成逻辑
+        this.generateRoute()
+      } finally {
+        this.aiLoading = false
+      }
+    },
+    initUserId() {
+      try {
+        const tryParse = (v) => { try { return JSON.parse(v) } catch { return null } }
+        const pickId = (o) => o && (o.userId || o.id || o.uid || o.user?.id || o.user?.userId) || null
+
+        const userInfo = tryParse(localStorage.getItem('userInfo')) || tryParse(sessionStorage.getItem('userInfo'))
+        if (userInfo) this.currentUserId = pickId(userInfo)
+        if (!this.currentUserId) {
+          const storedId = localStorage.getItem('currentUserId') || sessionStorage.getItem('currentUserId')
+          if (storedId) this.currentUserId = Number(storedId)
+        }
+        if (!this.currentUserId) {
+          const token = localStorage.getItem('token')
+          if (token && token.includes('.')) {
+            try {
+              const payload = JSON.parse(atob(token.split('.')[1]))
+              this.currentUserId = payload.userId || payload.sub || null
+            } catch (e) {
+              console.warn('[SelfPlan] token decode failed', e)
+            }
+          }
+        }
+        // 未登录也可浏览界面；仅在需要用户ID时再校验
+      } catch (e) {
+        this.$message.error('获取用户信息失败')
+      }
+    },
+    ensureLoggedIn() {
+      if (!this.currentUserId) { this.$message.warning('请先登录后再进行操作'); return false }
+      return true
+    },
+    toNumber(v) { return v ? Number(v) : 0 },
+    formatServiceLang(lang) { return lang ? String(lang).split(',').join('、') : '-' },
+    getGuideAvatar(guide) {
+      const hash = (guide?.guideId || 1) % 100 + 100
+      return `https://picsum.photos/id/${hash}/100/100`
+    },
+
     selectDestination(destName) {
-      this.routeForm.destination = destName;
-      this.activeTab = 'route'; // 自动切换到路线规划标签
+      this.routeForm.destination = destName
+      this.activeTab = 'route'
     },
 
     generateRoute() {
-      if (!this.routeForm.destination) {
-        this.$message.warning('请选择目的地');
-        return;
-      }
-
-      if (!this.routeForm.interests.length) {
-        this.$message.warning('请至少选择一个兴趣偏好');
-        return;
-      }
-
-      this.routeLoading = true;
-
-      // 模拟API请求延迟
+      if (!this.routeForm.destination) { this.$message.warning('请选择目的地'); return }
+      if (!this.routeForm.interests.length) { this.$message.warning('请至少选择一个兴趣偏好'); return }
+      this.routeLoading = true
       setTimeout(() => {
         this.routeResult = {
           days: Array.from({ length: this.routeForm.days }, (_, i) => ({
@@ -448,56 +425,98 @@ export default {
               `晚上：享受${this.routeForm.accommodation}住宿设施`,
             ],
           })),
-        };
-        this.routeLoading = false;
-      }, 1500);
+        }
+        this.routeLoading = false
+      }, 800)
     },
 
     saveRoute() {
-      if (!this.routeResult) return;
-      this.$message.success("路线已保存到『我的行程』");
+      if (!this.routeResult) return
+      this.$message.success("路线已保存到『我的行程』（示例：未接通后端生成接口）")
+    },
+
+    async loadGuides() {
+      this.guideLoading = true
+      try {
+        const data = await request.get('/travel-portal/guideExtend/list')
+        this.guides = Array.isArray(data) ? data : []
+        this.filteredGuides = this.guides.slice()
+      } catch (e) {
+        this.$message.error(e.message || '获取导游列表失败')
+      } finally {
+        this.guideLoading = false
+      }
     },
 
     filterGuides() {
-      this.guideLoading = true;
-
-      // 模拟API请求延迟
+      this.guideLoading = true
       setTimeout(() => {
-        this.filteredGuides = this.guides.filter((g) => {
-          const inLang = !this.guideFilter.language || g.language === this.guideFilter.language;
-          const inSpecialty = !this.guideFilter.specialty || g.specialty === this.guideFilter.specialty;
-          const inPrice =
-            g.price >= this.guideFilter.priceRange[0] &&
-            g.price <= this.guideFilter.priceRange[1];
-          const inRating = g.rating >= this.guideFilter.minRating;
-          return inLang && inSpecialty && inPrice && inRating;
-        });
+        const [minPrice, maxPrice] = this.guideFilter.priceRange
+        const minRating = Number(this.guideFilter.minRating || 0)
+        const lang = this.guideFilter.language
+        const sp = this.guideFilter.specialty
+        let list = this.guides.filter(g => {
+          const inLang = !lang || (g.serviceLang && String(g.serviceLang).includes(lang))
+          const inSpecialty = !sp || (g.goodAtArea && String(g.goodAtArea).includes(sp))
+          const price = Number(g.baseFee || 0)
+          const inPrice = price >= minPrice && price <= maxPrice
+          const rating = Number(g.serviceScore || 0)
+          const inRating = rating >= minRating
+          return inLang && inSpecialty && inPrice && inRating
+        })
+        if (this.guideFilter.sortBy === 'rating') list.sort((a,b) => this.toNumber(b.serviceScore) - this.toNumber(a.serviceScore))
+        else if (this.guideFilter.sortBy === 'price') list.sort((a,b) => this.toNumber(a.baseFee) - this.toNumber(b.baseFee))
+        this.filteredGuides = list
+        this.guideLoading = false
+      }, 200)
+    },
 
-        if (this.guideFilter.sortBy === "rating") {
-          this.filteredGuides.sort((a, b) => b.rating - a.rating);
-        } else if (this.guideFilter.sortBy === "price") {
-          this.filteredGuides.sort((a, b) => a.price - b.price);
+    async bookGuide(guide) {
+      if (!guide) return
+      try {
+        const payload = {
+          userId: this.currentUserId,
+          productId: null,
+          guideId: guide.guideId,
+          totalPrice: Number(guide.baseFee || 0),
+          payType: 2,
+          payStatus: 1,
+          orderStatus: 0,
+          bookingDate: this.formatDateForAPI(new Date()),
+          travellers: 1,
+          specialNeeds: ''
         }
-
-        this.guideLoading = false;
-      }, 1000);
+        await request.post('/travel-portal/tourOrder/create', payload)
+        this.$message.success(`成功预订导游 ${guide.realName || ''}`)
+        this.detailDialogVisible = false
+      } catch (e) {
+        this.$message.error(e.message || '预订失败')
+      }
     },
 
-    bookGuide(guide) {
-      if (!guide) return;
-      this.$message.success(`成功预订导游 ${guide.name}`);
-      this.detailDialogVisible = false;
+    async viewGuideDetail(guide) {
+      if (!guide?.guideId) return
+      try {
+        const data = await request.get(`/travel-portal/guideExtend/${guide.guideId}`)
+        this.selectedGuide = data || guide
+        this.detailDialogVisible = true
+      } catch (e) {
+        this.$message.error(e.message || '获取导游详情失败')
+      }
     },
 
-    viewGuideDetail(guide) {
-      this.selectedGuide = guide;
-      this.detailDialogVisible = true;
-    },
+    formatDateForAPI(date) {
+      const d = new Date(date)
+      const pad = n => (n < 10 ? `0${n}` : `${n}`)
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`
+    }
   },
   mounted() {
-    this.filteredGuides = this.guides;
+    this.filteredGuides = this.guides
+    this.initUserId()
+    this.loadGuides()
   },
-};
+}
 </script>
 
 <style scoped>

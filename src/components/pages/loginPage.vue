@@ -152,29 +152,68 @@ export default {
                         //     this.showCelebration = false;
                         // }, 2000);
 
-                        // 4.2 提示登录成功（后端返回的用户信息中若有 realName，可替换为 response.realName）
-                        this.$message.success(`欢迎回来，${response.realName || '用户'}！🎉🎉`);
+                        // 4.2 提示登录成功：从多种字段安全获取显示名
+                        const userData = response?.data || response; 
+                        const displayName = userData.realName || userData.nickName || userData.username || userData.userName || '用户';
+                        this.$message.success(`欢迎回来，${displayName}！🎉🎉`);
 
                         // 4.3 记住密码：将用户信息/Token 存入 localStosrage
+                        const token = userData?.token || userData?.data?.token || userData?.accessToken || '';
+                        const role = userData?.userRole || userData?.role || userData?.data?.userRole;
+                        
+                        // 提取用户ID，尝试多种可能的字段名
+                        const userId = userData?.userId || userData?.id || userData?.uid || 
+                                      userData?.data?.userId || userData?.data?.id || userData?.data?.uid ||
+                                      userData?.user?.id || userData?.user?.userId;
+                        
+                        // 如果从用户数据中无法获取userId，尝试从token中解析
+                        let extractedUserId = userId;
+                        if (!extractedUserId && token && token.includes('.')) {
+                            try {
+                                const payload = JSON.parse(atob(token.split('.')[1]));
+                                extractedUserId = payload.userId || payload.id || payload.sub || payload.user_id;
+                            } catch (e) {
+                                console.warn('从token解析userId失败:', e);
+                            }
+                        }
+                        
+                        const normalizedUser = { 
+                            ...userData, 
+                            token, 
+                            userRole: role,
+                            userId: extractedUserId  // 确保userId字段存在
+                        };
+                        
+                        console.log('登录成功，用户信息:', {
+                            userId: extractedUserId,
+                            userRole: role,
+                            username: userData.username,
+                            realName: userData.realName
+                        });
+                        
                         if (this.loginForm.remember) {
-                            localStorage.setItem('userInfo', JSON.stringify(response)); // 存储用户信息
-                            localStorage.setItem('token', response.token); // 单独存储 Token（方便请求拦截器使用）
+                            localStorage.setItem('userInfo', JSON.stringify(normalizedUser));
+                            if (token) localStorage.setItem('token', token);
+                            if (extractedUserId) localStorage.setItem('userId', String(extractedUserId));
                         } else {
-                            // 不记住密码：存入 sessionStorage（关闭浏览器后清除）
-                            sessionStorage.setItem('userInfo', JSON.stringify(response));
-                            sessionStorage.setItem('token', response.token);
+                            sessionStorage.setItem('userInfo', JSON.stringify(normalizedUser));
+                            if (token) sessionStorage.setItem('token', token);
+                            if (extractedUserId) sessionStorage.setItem('userId', String(extractedUserId));
                         }
 
                         // 4.4 延迟跳转首页（1.5秒后）//判断是什么角色对应进入不同首页
                         setTimeout(() => {
-                             if (response.userRole === 5) {
-                                router.push('/guideHome');
-                            } else if (response.userRole === 2 || response.userRole === 3) {
-                                router.push('/managers/home');
-                            } else if (response.userRole === 1) {
+                            const userRole = role;
+                            if (userRole === 5) {
                                 router.push('/travellers/home');
-                            } else if (response.userRole === 4) {
+                            } else if (userRole === 2 || userRole === 3) {
+                                router.push('/managers/home');
+                            } else if (userRole === 1) {
+                                router.push('/travellers/home');
+                            } else if (userRole === 4) {
                                 router.push('/merchants/home');
+                            } else {
+                                router.push('/travellers/home');
                             }
                         }, 1500);
 

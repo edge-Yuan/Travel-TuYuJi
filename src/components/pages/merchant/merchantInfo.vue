@@ -2,14 +2,22 @@
   <div class="merchant-info">
     <!-- 页面标题 -->
     <div class="page-header">
-      <h1 class="title">个人中心</h1>
-      <p class="subtitle">管理个人信息和账户设置</p>
+      <div class="header-content">
+        <div class="title-section">
+          <h1 class="title">个人中心</h1>
+          <p class="subtitle">管理个人信息和账户设置</p>
+        </div>
+        <div class="header-actions">
+          <el-button type="primary" icon="el-icon-edit" @click="editBasicInfo">编辑信息</el-button>
+          <el-button type="success" icon="el-icon-setting" @click="activeTab = 'account'">账户设置</el-button>
+        </div>
+      </div>
     </div>
 
     <el-row :gutter="20">
       <!-- 左侧个人信息 -->
       <el-col :span="8">
-        <div class="profile-card">
+        <el-card class="profile-card">
           <div class="profile-header">
             <div class="avatar-section">
               <img :src="merchantInfo.avatar" class="avatar" />
@@ -35,33 +43,53 @@
           
           <div class="profile-stats">
             <div class="stat-item">
-              <div class="stat-number">{{ merchantInfo.totalProducts }}</div>
-              <div class="stat-label">产品数量</div>
+              <div class="stat-icon products">
+                <i class="el-icon-goods"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number">{{ merchantInfo.totalProducts }}</div>
+                <div class="stat-label">产品数量</div>
+              </div>
             </div>
             <div class="stat-item">
-              <div class="stat-number">{{ merchantInfo.totalOrders }}</div>
-              <div class="stat-label">订单数量</div>
+              <div class="stat-icon orders">
+                <i class="el-icon-tickets"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number">{{ merchantInfo.totalOrders }}</div>
+                <div class="stat-label">订单数量</div>
+              </div>
             </div>
             <div class="stat-item">
-              <div class="stat-number">{{ merchantInfo.totalRevenue }}</div>
-              <div class="stat-label">总收入</div>
+              <div class="stat-icon revenue">
+                <i class="el-icon-money"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number">{{ merchantInfo.totalRevenue }}</div>
+                <div class="stat-label">总收入</div>
+              </div>
             </div>
           </div>
-        </div>
+        </el-card>
 
         <!-- 快捷操作 -->
-        <div class="quick-actions">
-          <h3>快捷操作</h3>
-          <el-button type="primary" @click="goToProductManagement">
-            <i class="el-icon-goods"></i> 产品管理
-          </el-button>
-          <el-button type="success" @click="goToOrderProcessing">
-            <i class="el-icon-tickets"></i> 订单处理
-          </el-button>
-          <el-button type="info" @click="goToDataCenter">
-            <i class="el-icon-data-analysis"></i> 数据中心
-          </el-button>
-        </div>
+        <el-card class="quick-actions">
+          <div slot="header" class="actions-header">
+            <i class="el-icon-menu"></i>
+            <span>快捷操作</span>
+          </div>
+          <div class="actions-content">
+            <el-button type="primary" @click="goToProductManagement" class="action-btn">
+              <i class="el-icon-goods"></i> 产品管理
+            </el-button>
+            <el-button type="success" @click="goToOrderProcessing" class="action-btn">
+              <i class="el-icon-tickets"></i> 订单处理
+            </el-button>
+            <el-button type="info" @click="goToDataCenter" class="action-btn">
+              <i class="el-icon-data-analysis"></i> 数据中心
+            </el-button>
+          </div>
+        </el-card>
       </el-col>
 
       <!-- 右侧详细信息 -->
@@ -72,66 +100,64 @@
             <div class="info-section">
               <div class="section-header">
                 <h3>基本信息</h3>
-                <el-button type="primary" size="small" @click="editBasicInfo">编辑</el-button>
+                <el-button type="primary" size="small" @click="showEditDialog = true">编辑</el-button>
               </div>
-              <el-form :model="merchantInfo" label-width="120px" class="info-form">
+              <div class="info-display">
                 <el-row :gutter="20">
                   <el-col :span="12">
-                    <el-form-item label="商户名称">
-                      <el-input v-model="merchantInfo.name" :disabled="!isEditing"></el-input>
-                    </el-form-item>
+                    <div class="info-item">
+                      <span class="info-label">商户名称：</span>
+                      <span class="info-value">{{ merchantInfo.name }}</span>
+                    </div>
                   </el-col>
                   <el-col :span="12">
-                    <el-form-item label="商户类型">
-                      <el-select v-model="merchantInfo.type" :disabled="!isEditing">
-                        <el-option label="酒店" value="hotel"></el-option>
-                        <el-option label="旅行社" value="travel_agency"></el-option>
-                        <el-option label="景区" value="attraction"></el-option>
-                        <el-option label="其他" value="other"></el-option>
-                      </el-select>
-                    </el-form-item>
+                    <div class="info-item">
+                      <span class="info-label">商户类型：</span>
+                      <span class="info-value">{{ getTypeName(merchantInfo.type) }}</span>
+                    </div>
                   </el-col>
                 </el-row>
                 
                 <el-row :gutter="20">
                   <el-col :span="12">
-                    <el-form-item label="联系人">
-                      <el-input v-model="merchantInfo.contactPerson" :disabled="!isEditing"></el-input>
-                    </el-form-item>
+                    <div class="info-item">
+                      <span class="info-label">联系人：</span>
+                      <span class="info-value">{{ merchantInfo.contactPerson }}</span>
+                    </div>
                   </el-col>
                   <el-col :span="12">
-                    <el-form-item label="联系电话">
-                      <el-input v-model="merchantInfo.phone" :disabled="!isEditing"></el-input>
-                    </el-form-item>
+                    <div class="info-item">
+                      <span class="info-label">联系电话：</span>
+                      <span class="info-value">{{ merchantInfo.phone }}</span>
+                    </div>
                   </el-col>
                 </el-row>
                 
                 <el-row :gutter="20">
                   <el-col :span="12">
-                    <el-form-item label="邮箱">
-                      <el-input v-model="merchantInfo.email" :disabled="!isEditing"></el-input>
-                    </el-form-item>
+                    <div class="info-item">
+                      <span class="info-label">邮箱：</span>
+                      <span class="info-value">{{ merchantInfo.email }}</span>
+                    </div>
                   </el-col>
                   <el-col :span="12">
-                    <el-form-item label="营业执照号">
-                      <el-input v-model="merchantInfo.licenseNumber" :disabled="!isEditing"></el-input>
-                    </el-form-item>
+                    <div class="info-item">
+                      <span class="info-label">营业执照号：</span>
+                      <span class="info-value">{{ merchantInfo.licenseNumber }}</span>
+                    </div>
                   </el-col>
                 </el-row>
                 
-                <el-form-item label="详细地址">
-                  <el-input v-model="merchantInfo.address" :disabled="!isEditing"></el-input>
-                </el-form-item>
-                
-                <el-form-item label="商户简介">
-                  <el-input type="textarea" v-model="merchantInfo.description" :rows="4" :disabled="!isEditing"></el-input>
-                </el-form-item>
-                
-                <div v-if="isEditing" class="form-actions">
-                  <el-button @click="cancelEdit">取消</el-button>
-                  <el-button type="primary" @click="saveBasicInfo">保存</el-button>
+                <div class="info-item">
+                  <span class="info-label">详细地址：</span>
+                  <span class="info-value">{{ merchantInfo.address }}</span>
                 </div>
-              </el-form>
+                
+                <div class="info-item">
+                  <span class="info-label">商户简介：</span>
+                  <div class="info-description">{{ merchantInfo.description }}</div>
+                </div>
+              </div>
             </div>
           </el-tab-pane>
 
@@ -324,6 +350,68 @@
       </div>
     </el-dialog>
 
+    <!-- 编辑基本信息对话框 -->
+    <el-dialog title="编辑基本信息" :visible.sync="showEditDialog" width="600px">
+      <el-form :model="editForm" :rules="editRules" ref="editForm" label-width="120px">
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="商户名称" prop="name">
+              <el-input v-model="editForm.name"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="商户类型" prop="type">
+              <el-select v-model="editForm.type" placeholder="请选择商户类型">
+                <el-option label="酒店" value="hotel"></el-option>
+                <el-option label="旅行社" value="travel_agency"></el-option>
+                <el-option label="景区" value="attraction"></el-option>
+                <el-option label="其他" value="other"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="联系人" prop="contactPerson">
+              <el-input v-model="editForm.contactPerson"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="联系电话" prop="phone">
+              <el-input v-model="editForm.phone"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="邮箱" prop="email">
+              <el-input v-model="editForm.email"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="营业执照号" prop="licenseNumber">
+              <el-input v-model="editForm.licenseNumber"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <el-form-item label="详细地址" prop="address">
+          <el-input v-model="editForm.address"></el-input>
+        </el-form-item>
+        
+        <el-form-item label="商户简介" prop="description">
+          <el-input type="textarea" v-model="editForm.description" :rows="4" resize="none" class="fixed-textarea"></el-input>
+        </el-form-item>
+      </el-form>
+      
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="showEditDialog = false">取消</el-button>
+        <el-button type="primary" @click="saveEditInfo">保存</el-button>
+      </div>
+    </el-dialog>
+
     <!-- 添加银行卡对话框 -->
     <el-dialog title="添加银行卡" :visible.sync="showAddCardDialog" width="500px">
       <el-form :model="bankCardForm" :rules="bankCardRules" ref="bankCardForm" label-width="100px">
@@ -358,6 +446,7 @@ export default {
       isEditing: false,
       showChangePasswordDialog: false,
       showAddCardDialog: false,
+      showEditDialog: false,
       merchantInfo: {
         name: '三亚海景酒店',
         merchantId: 'M202401150001',
@@ -438,6 +527,34 @@ export default {
         securityAlert: true,
         promotion: false,
         marketNews: false
+      },
+      editForm: {
+        name: '',
+        type: '',
+        contactPerson: '',
+        phone: '',
+        email: '',
+        licenseNumber: '',
+        address: '',
+        description: ''
+      },
+      editRules: {
+        name: [
+          { required: true, message: '请输入商户名称', trigger: 'blur' }
+        ],
+        type: [
+          { required: true, message: '请选择商户类型', trigger: 'change' }
+        ],
+        contactPerson: [
+          { required: true, message: '请输入联系人', trigger: 'blur' }
+        ],
+        phone: [
+          { required: true, message: '请输入联系电话', trigger: 'blur' }
+        ],
+        email: [
+          { required: true, message: '请输入邮箱', trigger: 'blur' },
+          { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
+        ]
       }
     }
   },
@@ -460,6 +577,16 @@ export default {
       return typeMap[level] || 'info';
     },
     
+    getTypeName(type) {
+      const typeMap = {
+        hotel: '酒店',
+        travel_agency: '旅行社',
+        attraction: '景区',
+        other: '其他'
+      };
+      return typeMap[type] || type;
+    },
+    
     handleAvatarSuccess(response, file) {
       this.merchantInfo.avatar = URL.createObjectURL(file.raw);
     },
@@ -478,16 +605,18 @@ export default {
     },
     
     editBasicInfo() {
-      this.isEditing = true;
+      this.showEditDialog = true;
+      this.editForm = { ...this.merchantInfo };
     },
     
-    cancelEdit() {
-      this.isEditing = false;
-    },
-    
-    saveBasicInfo() {
-      this.$message.success('基本信息保存成功');
-      this.isEditing = false;
+    saveEditInfo() {
+      this.$refs.editForm.validate((valid) => {
+        if (valid) {
+          this.merchantInfo = { ...this.editForm };
+          this.$message.success('基本信息保存成功');
+          this.showEditDialog = false;
+        }
+      });
     },
     
     changePassword() {
@@ -591,29 +720,52 @@ export default {
 
 <style scoped>
 .merchant-info {
-  padding: 20px;
+  padding: 24px;
+  min-height: 100vh;
 }
 
+
+/* 页面标题 */
 .page-header {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title-section {
+  flex: 1;
 }
 
 .title {
-  font-size: 24px;
-  color: #333;
-  margin-bottom: 8px;
+  font-size: 28px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 8px 0;
 }
 
 .subtitle {
-  color: #666;
+  color: #7f8c8d;
   margin: 0;
+  font-size: 14px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
 }
 
 .profile-card {
-  background: white;
-  border-radius: 8px;
+  border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 30px;
+  border: none;
   margin-bottom: 20px;
 }
 
@@ -671,50 +823,182 @@ export default {
 
 .profile-stats {
   display: flex;
-  justify-content: space-around;
+  flex-direction: column;
+  gap: 15px;
   padding-top: 20px;
   border-top: 1px solid #eee;
 }
 
 .stat-item {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+  background: #e9ecef;
+  transform: translateX(5px);
+}
+
+.stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-icon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+  border-radius: 8px;
+}
+
+.stat-icon.products {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.stat-icon.orders {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+}
+
+.stat-icon.revenue {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+}
+
+.stat-icon i {
+  font-size: 18px;
+  position: relative;
+  z-index: 1;
+}
+
+.stat-content {
+  flex: 1;
 }
 
 .stat-number {
-  font-size: 24px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 5px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 2px;
+  line-height: 1;
 }
 
 .stat-label {
-  font-size: 14px;
-  color: #666;
+  font-size: 12px;
+  color: #7f8c8d;
 }
 
 .quick-actions {
-  background: white;
-  border-radius: 8px;
+  border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 20px;
+  border: none;
 }
 
-.quick-actions h3 {
-  margin: 0 0 15px 0;
-  color: #333;
+.actions-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
 }
 
-.quick-actions .el-button {
-  width: 100%;
-  margin-bottom: 10px;
+.actions-header i {
+  color: #3b82f6;
+}
+
+.actions-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0;
+}
+
+.action-btn {
+  width: 100% !important;
+  height: 44px !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.action-btn i {
+  font-size: 16px !important;
 }
 
 .info-section {
   background: white;
-  border-radius: 8px;
+  border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 30px;
   margin-bottom: 20px;
+  border: none;
+}
+
+.info-display {
+  padding: 20px 0;
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.info-item:hover {
+  background: #e9ecef;
+  transform: translateX(5px);
+}
+
+.info-label {
+  font-weight: 600;
+  color: #2c3e50;
+  min-width: 120px;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.info-value {
+  color: #495057;
+  flex: 1;
+  word-break: break-all;
+}
+
+.info-description {
+  color: #495057;
+  flex: 1;
+  line-height: 1.6;
+  word-break: break-all;
 }
 
 .section-header {
@@ -875,5 +1159,28 @@ export default {
 
 .dialog-footer {
   text-align: right;
+}
+
+/* 弹窗输入框固定大小和去掉右下角图标 */
+.fixed-textarea .el-textarea__inner {
+  resize: none !important;
+  width: 100% !important;
+  min-height: 80px !important;
+  max-height: 80px !important;
+}
+
+.fixed-textarea .el-textarea__inner::-webkit-resizer {
+  display: none !important;
+}
+
+/* 所有弹窗中的输入框 */
+.el-dialog .el-input__inner,
+.el-dialog .el-textarea__inner {
+  width: 100% !important;
+  resize: none !important;
+}
+
+.el-dialog .el-textarea__inner::-webkit-resizer {
+  display: none !important;
 }
 </style>

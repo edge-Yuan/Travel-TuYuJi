@@ -1,11 +1,12 @@
 <template>
     <div class="itinerary-management">
-        <!-- 用户ID输入框（临时解决方案） -->
+        <!-- 用户ID输入框（当无法自动获取用户ID时显示） -->
         <div v-if="!currentUserId" class="user-id-input">
-            <el-alert title="请设置用户ID" type="warning" :closable="false" style="margin-bottom: 20px;">
-                <p>请输入您登录的用户ID：</p>
+            <el-alert title="无法自动获取用户信息" type="info" :closable="false" style="margin-bottom: 20px;">
+                <p>系统无法自动获取您的用户信息，请手动输入用户ID：</p>
                 <el-input v-model="tempUserId" placeholder="请输入用户ID" style="width: 200px; margin-right: 10px;"></el-input>
                 <el-button type="primary" @click="setUserId">确定</el-button>
+                <el-button type="text" @click="refreshUserInfo" style="margin-left: 10px;">重新获取</el-button>
             </el-alert>
         </div>
 
@@ -23,7 +24,7 @@
                 <div class="itinerary-header">
                     <div class="itinerary-title">
                         <h3>{{ itinerary.title }}</h3>
-                        <el-tag :type="getStatusTagType(itinerary.orderStatus)">{{ getStatusText(itinerary.orderStatus) }}</el-tag>
+                        <el-tag :type="getStatusTagType(getDisplayStatus(itinerary))">{{ getStatusText(getDisplayStatus(itinerary)) }}</el-tag>
                     </div>
 
                     <div class="itinerary-actions">
@@ -31,38 +32,44 @@
                             查看详情
                         </el-button>
 
-                        <template v-if="itinerary.orderStatus === 1 && canModifyItinerary(itinerary)">
+                        <template v-if="getDisplayStatus(itinerary) === 1 && canModifyItinerary(itinerary)">
                             <el-button type="text" @click="startModifyItinerary(itinerary.orderId)" class="modify-btn">
                                 修改行程
                             </el-button>
                         </template>
 
-                        <template v-if="itinerary.orderStatus === 1 && canCancelItinerary(itinerary)">
+                        <template v-if="getDisplayStatus(itinerary) === 1 && canCancelItinerary(itinerary)">
                             <el-button type="text" @click="openCancelDialog(itinerary.orderId)" class="cancel-btn">
                                 取消行程
+                            </el-button>
+                        </template>
+
+                        <template v-if="getDisplayStatus(itinerary) === 2 && canEvaluateItinerary(itinerary)">
+                            <el-button type="text" @click="openEvaluationDialog(itinerary)" class="evaluate-btn">
+                                评价行程
                             </el-button>
                         </template>
                     </div>
                 </div>
 
                 <div class="itinerary-basic-info">
-                    <el-row :gutter="20">
-                        <el-col :span="4">
+                    <el-row :gutter="16">
+                        <el-col :span="6">
                             <div class="info-item">
                                 <span class="info-label">出行日期</span>
-                                <span class="info-value">{{ formatDate(itinerary.bookingDate) }}</span>
+                                <span class="info-value">{{ formatDate(itinerary.startDate) }}</span>
                             </div>
                         </el-col>
                         <el-col :span="4">
                             <div class="info-item">
                                 <span class="info-label">天数</span>
-                                <span class="info-value">{{ calculateDays(itinerary) }}天</span>
+                                <span class="info-value">{{ calculateDays(itinerary.startDate,itinerary.endDate) }}天</span>
                             </div>
                         </el-col>
                         <el-col :span="4">
                             <div class="info-item">
                                 <span class="info-label">人数</span>
-                                <span class="info-value">{{ itinerary.personCount }}人</span>
+                                <span class="info-value">{{ itinerary.travellers }}人</span>
                             </div>
                         </el-col>
                         <el-col :span="6">
@@ -74,10 +81,10 @@
                                 </span>
                             </div>
                         </el-col>
-                        <el-col :span="6">
+                        <el-col :span="4">
                             <div class="info-item">
                                 <span class="info-label">总价</span>
-                                <span class="info-value price">{{ itinerary.orderAmount | currency }}</span>
+                                <span class="info-value price">{{ itinerary.totalPrice | currency }}</span>
                             </div>
                         </el-col>
                     </el-row>
@@ -119,13 +126,13 @@
                         <el-col :span="8">
                             <div class="detail-item">
                                 <span class="detail-label">出行日期</span>
-                                <span class="detail-value">{{ formatDate(currentItinerary.bookingDate) }}</span>
+                                <span class="detail-value">{{ formatDate(currentItinerary.startDate) }}</span>
                             </div>
                         </el-col>
                         <el-col :span="8">
                             <div class="detail-item">
                                 <span class="detail-label">出行人数</span>
-                                <span class="detail-value">{{ currentItinerary.personCount }}人</span>
+                                <span class="detail-value">{{ currentItinerary.travellers }}人</span>
                             </div>
                         </el-col>
                     </el-row>
@@ -149,7 +156,7 @@
                         <el-col :span="8">
                             <div class="detail-item">
                                 <span class="detail-label">订单金额</span>
-                                <span class="detail-value price">{{ currentItinerary.orderAmount | currency }}</span>
+                                <span class="detail-value price">{{ currentItinerary.totalPrice | currency }}</span>
                             </div>
                         </el-col>
                     </el-row>
@@ -224,17 +231,22 @@
         <el-dialog title="取消行程" :visible.sync="showCancelDialog" width="500px">
             <div v-if="refundInfo" class="refund-info">
                 <el-alert title="退款信息" type="info" :closable="false" style="margin-bottom: 20px;">
-                    <p>预计退款金额: {{ refundInfo.refundAmount | currency }}</p>
-                    <p>退款说明: {{ refundInfo.refundDescription }}</p>
+                    <div class="refund-details">
+                        <p><strong>距离出发天数:</strong> {{ refundInfo.daysBeforeDeparture }}天</p>
+                        <p><strong>退款比例:</strong> {{ refundInfo.refundPercentage }}%</p>
+                        <p><strong>可退金额:</strong> <span class="refund-amount">{{ refundInfo.refundAmount | currency }}</span></p>
+                        <p><strong>退款到账:</strong> {{ refundInfo.refundDays }}个工作日内</p>
+                        <p><strong>退款政策:</strong> {{ refundInfo.refundPolicy }}</p>
+                    </div>
                 </el-alert>
             </div>
             <el-form :model="cancelForm" :rules="cancelRules" ref="cancelForm" label-width="100px">
                 <el-form-item label="取消原因" prop="reason">
                     <el-select v-model="cancelForm.reason" placeholder="请选择取消原因" style="width: 100%;">
-                        <el-option label="行程变更" value="schedule_change"></el-option>
-                        <el-option label="个人原因" value="personal_reason"></el-option>
-                        <el-option label="天气原因" value="weather"></el-option>
-                        <el-option label="其他原因" value="other"></el-option>
+                        <el-option label="行程变更" value="行程变更"></el-option>
+                        <el-option label="个人原因" value="个人原因"></el-option>
+                        <el-option label="天气原因" value="天气原因"></el-option>
+                        <el-option label="其他原因" value="其他原因"></el-option>
                     </el-select>
                 </el-form-item>
                 <el-form-item label="详细说明" prop="description">
@@ -257,15 +269,26 @@
                 <el-button type="primary" @click="showSuccessDialog = false">确定</el-button>
             </div>
         </el-dialog>
+
+        <!-- 行程评价组件 -->
+        <order-evaluation
+            :visible.sync="evaluationDialogVisible"
+            :order-data="currentEvaluationItinerary"
+            @evaluation-success="handleEvaluationSuccess"
+        />
     </div>
 </template>
 
 <script>
 // 导入request实例
 import request from '@/utils/request'
+import OrderEvaluation from './orderEvaluation.vue'
 
 export default {
     name: 'routesManage',
+    components: {
+        OrderEvaluation
+    },
     filters: {
         currency(value) {
             if (!value) return '¥0.00';
@@ -360,7 +383,11 @@ export default {
             },
 
             // 折叠面板状态
-            activeDay: 0
+            activeDay: 0,
+            
+            // 评价相关
+            evaluationDialogVisible: false,
+            currentEvaluationItinerary: {}
         };
     },
     computed: {
@@ -380,94 +407,132 @@ export default {
         this.initUserInfo();
     },
     methods: {
+        // 判断记录是否属于当前标签
+        isRecordInTab(record, tab) {
+            if (!record) return false;
+            const target = this.mapTabToStatus(tab);
+            if (target === null) return true;
+            
+            // 获取实际显示状态
+            const displayStatus = this.getDisplayStatus(record);
+            
+            // 如果显示状态为-1（不显示），则不显示在任何标签中
+            if (displayStatus === -1) return false;
+            
+            // 直接比较显示状态与目标状态
+            return displayStatus === target;
+        },
+        
+        // 获取实际显示状态（检查订单状态和支付状态）
+        getDisplayStatus(record) {
+            const orderStatus = Number(record.orderStatus);
+            const paymentStatus = Number(record.paymentStatus || record.payStatus);
+            
+            // 只有已确认且已支付的订单才能显示为行程
+            if (orderStatus === 1 && paymentStatus === 1) {
+                return 1; // 待出行
+            } else if (orderStatus === 2 && paymentStatus === 1) {
+                return 2; // 已完成
+            } else if (orderStatus === 3) {
+                return 3; // 已取消
+            } else {
+                // 其他情况不显示在行程管理中
+                return -1; // 不显示
+            }
+        },
+        // 标签到后端状态码的映射
+        mapTabToStatus(tab) {
+            // 0: 待确认, 1: 已确认(待出行), 2: 已完成, 3: 已取消, 4: 退款中
+            const map = {
+                all: null,
+                upcoming: 1,
+                completed: 2,
+                cancelled: 3
+            };
+            return Object.prototype.hasOwnProperty.call(map, tab) ? map[tab] : null;
+        },
+        // 列表去重
+        uniqueBy(list, key) {
+            if (!Array.isArray(list)) return [];
+            const seen = new Set();
+            const result = [];
+            for (const item of list) {
+                const k = item && (item[key] ?? JSON.stringify(item));
+                if (!seen.has(k)) {
+                    seen.add(k);
+                    result.push(item);
+                }
+            }
+            return result;
+        },
         // 初始化用户信息
         initUserInfo() {
             try {
                 console.log('开始初始化用户信息...');
                 
+                // 使用与头部组件相同的用户ID获取逻辑
+                const tryParse = (v) => { try { return JSON.parse(v) } catch { return null } };
+                const pickId = (o) => o && (o.userId || o.id || o.uid || o.user?.id || o.user?.userId) || '';
+                
                 // 方法1：从localStorage获取用户信息
-                const userInfo = localStorage.getItem('userInfo');
-                if (userInfo) {
-                    const user = JSON.parse(userInfo);
-                    this.currentUserId = user.userId || user.id;
-                    console.log('从localStorage获取用户ID:', this.currentUserId);
+                const userInfo = tryParse(localStorage.getItem('userInfo')) || tryParse(sessionStorage.getItem('userInfo'));
+                const idFromInfo = pickId(userInfo);
+                
+                // 方法2：从localStorage和sessionStorage获取userId
+                const idFromLS = localStorage.getItem('userId') || '';
+                const idFromSession = sessionStorage.getItem('userId') || '';
+                
+                // 方法3：从token中解析用户ID
+                const idFromToken = this.decodeUserIdFromToken() || '';
+                
+                this.currentUserId = String(idFromInfo || idFromLS || idFromSession || idFromToken || '');
+                
+                if (this.currentUserId) {
+                    console.log('成功获取用户ID:', this.currentUserId);
                     this.loadItineraries();
-                    return;
-                }
-
-                // 方法2：从token中解析用户ID
-                const token = localStorage.getItem('token');
-                if (token) {
-                    console.log('尝试从token解析用户ID...');
-                    this.parseUserIdFromToken(token);
                 } else {
-                    // 方法3：直接使用您登录的用户ID（临时解决方案）
-                    console.log('未找到token，使用默认用户ID进行测试');
-                    this.currentUserId = 10003; // 请根据您实际登录的用户ID修改这个值
-                    console.log('使用默认用户ID:', this.currentUserId);
-                    this.loadItineraries();
+                    console.log('未找到用户ID，需要手动输入');
                 }
             } catch (error) {
                 console.error('初始化用户信息失败:', error);
-                // 出错时也使用默认用户ID
-                this.currentUserId = 10003;
-                console.log('出错时使用默认用户ID:', this.currentUserId);
-                this.loadItineraries();
+                this.$message.error('获取用户信息失败，请手动输入用户ID');
             }
         },
 
         // 从token中解析用户ID
-        parseUserIdFromToken(token) {
+        decodeUserIdFromToken() {
+            const raw = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (!raw) return '';
             try {
-                // 如果您的token是JWT格式，可以这样解析
-                // 注意：这里只是示例，实际解析方式取决于您的token格式
-                if (token.includes('.')) {
-                    // JWT格式：header.payload.signature
-                    const payload = JSON.parse(atob(token.split('.')[1]));
-                    this.currentUserId = payload.userId || payload.sub;
-                    console.log('从JWT token解析用户ID:', this.currentUserId);
-                } else {
-                    // 如果不是JWT格式，尝试调用API获取用户信息
-                    console.log('token不是JWT格式，调用API获取用户信息');
-                    this.getCurrentUserInfo();
-                    return;
+                const token = raw.startsWith('Bearer ') ? raw.slice(7) : raw;
+                const base64url = token.split('.')[1];
+                if (!base64url) return '';
+                const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+                const json = decodeURIComponent(escape(window.atob(base64)));
+                const payload = JSON.parse(json);
+                const candidateKeys = ['userId', 'user_id', 'uid', 'id', 'sub', 'subject'];
+                let found = '';
+                for (const key of candidateKeys) {
+                    if (payload && payload[key] != null && payload[key] !== '') {
+                        found = String(payload[key]);
+                        break;
+                    }
                 }
-                
-                if (this.currentUserId) {
-                    this.loadItineraries();
-                } else {
-                    console.warn('无法从token解析用户ID');
-                    this.getCurrentUserInfo();
+                if (!found && payload && payload.user) {
+                    const nested = payload.user;
+                    for (const key of candidateKeys) {
+                        if (nested && nested[key] != null && nested[key] !== '') {
+                            found = String(nested[key]);
+                            break;
+                        }
+                    }
                 }
-            } catch (error) {
-                console.error('解析token失败:', error);
-                this.getCurrentUserInfo();
+                return found || '';
+            } catch (e) {
+                return '';
             }
         },
 
-        // 调用API获取当前用户信息
-        async getCurrentUserInfo() {
-            try {
-                console.log('调用API获取当前用户信息...');
-                
-                // 如果后端有获取当前用户信息的API，可以调用
-                // 这里先尝试从token中获取，如果没有相关API，可以临时使用默认值
-                const token = localStorage.getItem('token');
-                if (token) {
-                    // 临时方案：如果无法解析token，使用默认用户ID进行测试
-                    // 您可以根据实际情况调整
-                    this.currentUserId = 10003; // 临时使用，实际应该从API获取
-                    console.log('使用临时用户ID:', this.currentUserId);
-                    this.loadItineraries();
-                } else {
-                    console.warn('未找到token');
-                    this.$message.error('请先登录');
-                }
-            } catch (error) {
-                console.error('获取当前用户信息失败:', error);
-                this.$message.error('获取用户信息失败: ' + (error.message || '未知错误'));
-            }
-        },
 
         // 加载行程列表
         async loadItineraries() {
@@ -478,22 +543,38 @@ export default {
 
             this.loading = true;
             try {
-                console.log('开始加载行程列表，用户ID:', this.currentUserId);
+                const statusCode = this.mapTabToStatus(this.activeTab);
+                const params = {
+                    userId: Number(this.currentUserId),
+                    // 兼容多种分页参数命名
+                    current: this.currentPage,
+                    page: this.currentPage,
+                    pageNum: this.currentPage,
+                    size: this.pageSize,
+                    pageSize: this.pageSize
+                };
+                // 仅在非"全部"时传状态，兼容字段名
+                if (statusCode !== null) {
+                    params.orderStatus = statusCode;
+                    params.status = statusCode;
+                }
                 
-                const response = await request.get('/travel-portal/itinerary/list', {
-                    params: {
-                        userId: this.currentUserId,
-                        status: this.activeTab,
-                        page: this.currentPage,
-                        size: this.pageSize
-                    }
-                });
+                const response = await request.get('/travel-portal/itinerary/list', { params });
                 
-                console.log('API响应数据:', response);
+                const body = response && (response.data || response);
+                const payload = body && (body.data || body.result || body);
+                let records = payload && (payload.records || payload.list || []);
+                let total = payload && (payload.total || (Array.isArray(records) ? records.length : 0));
                 
-                if (response && response.records) {
-                    this.itineraries = response.records;
-                    this.total = response.total || 0;
+                // 当后端未按状态过滤时，前端根据标签兜底
+                if (Array.isArray(records)) {
+                    const filtered = this.mapTabToStatus(this.activeTab) === null
+                        ? records
+                        : records.filter(r => this.isRecordInTab(r, this.activeTab));
+                    
+                    this.itineraries = this.uniqueBy(filtered, 'orderId');
+                    total = filtered.length;
+                    this.total = total;
                     console.log('行程列表加载成功:', this.itineraries);
                 } else {
                     this.itineraries = [];
@@ -514,6 +595,7 @@ export default {
         handleTabChange(tab) {
             this.activeTab = tab;
             this.currentPage = 1;
+            this.itineraries = [];
             this.loadItineraries();
         },
 
@@ -539,8 +621,8 @@ export default {
                 });
                 
                 console.log('行程详情响应:', response);
-                
-                this.currentItinerary = response;
+                const body = response && (response.data || response);
+                this.currentItinerary = body && (body.data || body.result || body) || null;
                 this.showDetailDialog = true;
             } catch (error) {
                 console.error('获取行程详情失败:', error);
@@ -563,13 +645,15 @@ export default {
                 const response = await request.get(`/travel-portal/itinerary/detail/${orderId}`, {
                     params: { userId: this.currentUserId }
                 });
+                const body = response && (response.data || response);
+                const detail = body && (body.data || body.result || body) || {};
                 
                 this.modifiedItinerary = {
-                    title: response.title,
-                    startDate: new Date(response.bookingDate),
-                    endDate: new Date(response.bookingDate),
-                    travelers: response.personCount,
-                    notes: response.notes || ''
+                    title: detail.title,
+                    startDate: detail.bookingDate ? new Date(detail.bookingDate) : '',
+                    endDate: detail.bookingDate ? new Date(detail.bookingDate) : '',
+                    travelers: detail.personCount,
+                    notes: detail.notes || ''
                 };
                 this.showModifyDialog = true;
             } catch (error) {
@@ -626,13 +710,28 @@ export default {
             };
             
             try {
-                const response = await request.get(`/travel-portal/itinerary/refund-info/${orderId}`, {
+                // 先检查是否可以取消
+                const canCancelResponse = await request.get(`/travel-portal/itinerary/can-cancel/${orderId}`, {
                     params: { userId: this.currentUserId }
                 });
                 
-                this.refundInfo = response;
+                const canCancel = canCancelResponse.data?.data || canCancelResponse.data?.result || canCancelResponse.data;
+                if (!canCancel) {
+                    this.$message.warning('当前行程不允许取消');
+                    return;
+                }
+                
+                // 获取退款信息
+                const response = await request.get(`/travel-portal/itinerary/refund-info/${orderId}`, {
+                    params: { userId: this.currentUserId }
+                });
+                const body = response && (response.data || response);
+                this.refundInfo = body && (body.data || body.result || body) || null;
+                
+                console.log('退款信息:', this.refundInfo);
             } catch (error) {
                 console.error('获取退款信息失败:', error);
+                this.$message.error('获取退款信息失败: ' + (error.message || '未知错误'));
             }
             
             this.showCancelDialog = true;
@@ -644,23 +743,36 @@ export default {
                 if (valid) {
                     this.cancelLoading = true;
                     try {
+                        // 按照后端DTO要求构建请求数据
                         const cancelData = {
                             orderId: this.currentOrderId,
                             reason: this.cancelForm.reason,
-                            description: this.cancelForm.description
+                            description: this.cancelForm.description || '' // 确保description不为null
                         };
                         
-                        await request.post('/travel-portal/itinerary/cancel', cancelData, {
+                        console.log('提交取消行程数据:', cancelData);
+                        
+                        const response = await request.post('/travel-portal/itinerary/cancel', cancelData, {
                             params: { userId: this.currentUserId }
                         });
                         
-                        this.showCancelDialog = false;
-                        this.successMessage = '行程已取消';
-                        this.showSuccessDialog = true;
-                        this.loadItineraries();
+                        console.log('取消行程响应:', response);
+                        
+                        // 检查响应结果
+                        const body = response && (response.data || response);
+                        
+                        if (body && body.code === 1) {
+                            this.showCancelDialog = false;
+                            this.successMessage = '行程已成功取消';
+                            this.showSuccessDialog = true;
+                            this.loadItineraries();
+                        } else {
+                            this.$message.error(body?.msg || '取消行程失败');
+                        }
                     } catch (error) {
                         console.error('取消行程失败:', error);
-                        this.$message.error('取消行程失败: ' + (error.message || '未知错误'));
+                        const errorMsg = error?.response?.data?.msg || error?.message || '未知错误';
+                        this.$message.error('取消行程失败: ' + errorMsg);
                     } finally {
                         this.cancelLoading = false;
                     }
@@ -670,15 +782,23 @@ export default {
 
         // 其他辅助方法
         canModifyItinerary(itinerary) {
-            if (itinerary.orderStatus !== 1) return false;
-            const startDate = new Date(itinerary.bookingDate);
+            // 只有状态为"待出行"(1)且预订日期大于明天才能修改
+            if (this.getDisplayStatus(itinerary) !== 1) return false;
+            const bookingDate = itinerary.bookingDate || itinerary.startDate || itinerary.travelDate;
+            if (!bookingDate) return false;
+            
+            const startDate = new Date(bookingDate);
             const today = new Date();
             return startDate - today > 24 * 60 * 60 * 1000;
         },
 
         canCancelItinerary(itinerary) {
-            if (itinerary.orderStatus !== 1) return false;
-            const startDate = new Date(itinerary.bookingDate);
+            // 只有状态为"待出行"(1)且预订日期大于等于今天才能取消
+            if (this.getDisplayStatus(itinerary) !== 1) return false;
+            const bookingDate = itinerary.bookingDate || itinerary.startDate || itinerary.travelDate;
+            if (!bookingDate) return false;
+            
+            const startDate = new Date(bookingDate);
             const today = new Date();
             return startDate >= today;
         },
@@ -686,11 +806,12 @@ export default {
         getStatusText(status) {
             const statusMap = {
                 0: '待确认',
-                1: '已确认',
-                2: '已完成',
+                1: '待出行',  // 已确认且已支付 → 待出行
+                2: '已完成',  // 已完成且已支付 → 已完成
                 3: '已取消',
                 4: '退款中'
             };
+            if (status === -1) return '不符合条件';  // 不显示在行程管理中
             return statusMap[status] || '未知状态';
         },
 
@@ -702,6 +823,7 @@ export default {
                 3: 'danger',
                 4: 'info'
             };
+            if (status === -1) return 'info';  // 不符合条件的订单
             return typeMap[status] || 'default';
         },
 
@@ -746,9 +868,12 @@ export default {
             return num < 10 ? `0${num}` : num;
         },
 
-        calculateDays(itinerary) {
-            if (!itinerary || !itinerary.bookingDate) return 0;
-            return 1;
+        calculateDays(startDate, endDate) {
+            if (!startDate || !endDate) return 0;
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+            return days;
         },
 
         createNewItinerary() {
@@ -763,6 +888,43 @@ export default {
             }
             this.currentUserId = parseInt(this.tempUserId);
             console.log('手动设置用户ID:', this.currentUserId);
+            this.loadItineraries();
+        },
+        
+        // 重新获取用户信息
+        refreshUserInfo() {
+            console.log('重新获取用户信息...');
+            this.initUserInfo();
+        },
+        
+        // 评价相关方法
+        canEvaluateItinerary(itinerary) {
+            // 只有已完成的行程才能评价
+            const orderStatus = Number(itinerary.orderStatus);
+            const paymentStatus = Number(itinerary.paymentStatus || itinerary.payStatus);
+            
+            // 订单状态为已完成(2)且已支付(1)的行程可以评价
+            return orderStatus === 2 && paymentStatus === 1;
+        },
+        
+        // 打开评价对话框
+        openEvaluationDialog(itinerary) {
+            if (!this.canEvaluateItinerary(itinerary)) {
+                this.$message.warning('只有已完成的行程才能评价');
+                return;
+            }
+            
+            this.currentEvaluationItinerary = { ...itinerary };
+            this.evaluationDialogVisible = true;
+        },
+        
+        // 评价成功回调
+        handleEvaluationSuccess(data) {
+            console.log('评价成功:', data);
+            this.$message.success('评价提交成功！');
+            this.evaluationDialogVisible = false;
+            
+            // 重新加载行程列表
             this.loadItineraries();
         }
     }
@@ -840,24 +1002,31 @@ export default {
     color: #f56c6c;
 }
 
+.evaluate-btn {
+    color: #67c23a;
+}
+
 .itinerary-basic-info {
     padding: 10px 0;
 }
 
 .info-item {
     margin-bottom: 10px;
+    white-space: nowrap;
 }
 
 .info-label {
     display: inline-block;
-    width: 70px;
+    width: 60px;
     color: #666;
     font-size: 14px;
+    margin-right: 6px;
 }
 
 .info-value {
     color: #333;
     font-size: 14px;
+    white-space: nowrap;
 }
 
 .price {
@@ -898,6 +1067,39 @@ export default {
 
 .detail-section {
     margin-bottom: 20px;
+}
+
+/* 行程详情内边距与元素间距优化 */
+.detail-card {
+    margin-bottom: 16px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    margin-bottom: 8px;
+}
+
+.detail-label {
+    min-width: 90px;
+    color: #666;
+}
+
+.detail-value {
+    flex: 1;
+    text-align: right;
+}
+
+.guide-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.guide-details > h4 {
+    margin: 0 0 6px 0;
 }
 
 .section-title {
@@ -1002,6 +1204,16 @@ export default {
 .refund-amount {
     color: #f56c6c;
     font-weight: bold;
+}
+
+.refund-details p {
+    margin: 8px 0;
+    line-height: 1.5;
+}
+
+.refund-details strong {
+    color: #333;
+    font-weight: 600;
 }
 
 .policy-alert {

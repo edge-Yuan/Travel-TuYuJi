@@ -1,7 +1,7 @@
 <template>
     <div class="package-detail">
         <el-row :gutter="20" class="card-row">
-            <el-col :span="8" v-for="(item, index) in packageData" :key="item.id" :index="index">
+            <el-col :span="8" v-for="(item, index) in packageData" :key="item && (item.productId || item.id) || index" :index="index">
                 <div class="card-fixed-container" style="margin-bottom:20px">
                     <el-card class="box-card">
                         <div class="pic">
@@ -86,12 +86,15 @@ export default {
                     url: '/travel-portal/tourProduct/getAllProducts',
                     method: 'get',
                 });
-                // 处理响应数据
-                if(data && data.data){
-                    this.packageData = data.data;
+                // 处理响应数据（兼容后端 {code, message, data} 或直接数组）
+                let list = [];
+                if (data && data.data) {
+                    const body = data.data;
+                    list = body && (body.data || body.result || body);
                 } else {
-                    this.packageData = data;
+                    list = data;
                 }
+                this.packageData = Array.isArray(list) ? list.filter(Boolean) : [];
                 this.$message.success('套餐数据加载成功')
             } catch (error) {
                 this.$message.error(error.message || '产品数据加载失败');

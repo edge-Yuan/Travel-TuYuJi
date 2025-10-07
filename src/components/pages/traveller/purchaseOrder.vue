@@ -170,33 +170,32 @@ export default {
     },
     
     async submitOrder() {
-      this.$refs.orderForm.validate(async (valid) => {
-        if (valid) {
-          this.submitting = true;
-          try {
-            const orderData = {
-              ...this.orderForm,
-              userId: this.getCurrentUserId(),
-              orderAmount: parseFloat(this.totalAmount),
-              payStatus: 0, // 待支付
-              orderStatus: 0 // 待确认
-            };
-            
-            await request({
-              url: '/travel-portal/tourOrder/create',
-              method: 'post',
-              data: orderData
-            });
-            
-            this.$message.success('订单创建成功！');
-            this.$router.push('/traveller/order');
-          } catch (error) {
-            this.$message.error('订单创建失败');
-            console.error('创建订单失败:', error);
-          } finally {
-            this.submitting = false;
+      this.$refs.orderForm.validate((valid) => {
+        if (!valid) return;
+        const product = this.productDetail || {};
+        const firstImage = (product.mainImgUrl || (product.imgUrls ? String(product.imgUrls).split(',')[0] : '') || '').trim();
+        const orderProducts = [
+          {
+            id: product.productId || this.orderForm.productId,
+            name: product.productName || '商品',
+            image: firstImage && !firstImage.startsWith('http') ? `/${firstImage.replace(/^\//,'')}` : firstImage,
+            price: Number(product.price || 0),
+            quantity: Number(this.orderForm.personCount || 1),
+            attrs: []
           }
-        }
+        ].filter(p => p.id);
+
+        // 跳转到更完善的结算页，由其完成地址/优惠券/提交
+        this.$router.push({
+          path: '/purchasePages',
+          query: {
+            orderProducts: JSON.stringify(orderProducts),
+            bookingDate: this.orderForm.bookingDate || '',
+            travellers: String(this.orderForm.personCount || 1),
+            payType: String(this.orderForm.payType || 1),
+            specialNeeds: this.orderForm.specialNeeds || ''
+          }
+        });
       });
     },
     

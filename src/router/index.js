@@ -11,7 +11,15 @@ import routesManage from "@/components/pages/traveller/routesManage.vue";
 import packageDetail from "@/components/pages/traveller/packageDetail.vue";
 import purchasePages from "@/components/pages/traveller/purchase-pages.vue";
 import purchaseOrder from "@/components/pages/traveller/purchaseOrder.vue";
-import orderList from "@/components/pages/traveller/orderList.vue";
+import paymentPage from "@/components/pages/traveller/paymentPage.vue";
+import scenicRecommend from "@/components/pages/traveller/scenicRecommend.vue";
+import scenicArticleDetail from "@/components/pages/traveller/scenicArticleDetail.vue";
+import dataDebug from "@/components/pages/traveller/dataDebug.vue";
+import evaluationHistory from "@/components/pages/traveller/evaluationHistory.vue";
+import uploadTest from "@/components/pages/traveller/uploadTest.vue";
+import uploadDebug from "@/components/pages/traveller/uploadDebug.vue";
+import imageDebug from "@/components/pages/traveller/imageDebug.vue";
+import unifiedEvaluationExample from "@/components/pages/traveller/unifiedEvaluationExample.vue";
 import loginPage from "@/components/pages/loginPage.vue";
 import registerPage from "@/components/pages/registerPage.vue";
 import travellersHome from "@/components/pages/travellersHome.vue";
@@ -77,6 +85,17 @@ const routes = [
         component: myOrder,
       },
       {
+        path: "/traveller/attractions",
+        name: "scenicRecommend",
+        component: scenicRecommend,
+      },
+      {
+        path: "/traveller/attractions/article/:id",
+        name: "scenicArticleDetail",
+        component: scenicArticleDetail,
+        props: true,
+      },
+      {
         path: "/traveller/ordermanage",
         name: "ordermanage",
         component: orderManage,
@@ -89,7 +108,37 @@ const routes = [
       {
         path: "/traveller/orderList",
         name: "orderList",
-        component: orderList,
+        redirect: "/traveller/order",
+      },
+      {
+        path: "/traveller/debug",
+        name: "dataDebug",
+        component: dataDebug,
+      },
+      {
+        path: "/traveller/evaluationHistory",
+        name: "evaluationHistory",
+        component: evaluationHistory,
+      },
+      {
+        path: "/traveller/uploadTest",
+        name: "uploadTest",
+        component: uploadTest,
+      },
+      {
+        path: "/traveller/uploadDebug",
+        name: "uploadDebug",
+        component: uploadDebug,
+      },
+      {
+        path: "/traveller/imageDebug",
+        name: "imageDebug",
+        component: imageDebug,
+      },
+      {
+        path: "/traveller/unifiedEvaluationExample",
+        name: "unifiedEvaluationExample",
+        component: unifiedEvaluationExample,
       },
     ],
   },
@@ -199,6 +248,11 @@ const routes = [
     path: "/purchaseOrder",
     name: "purchaseOrder",
     component: purchaseOrder,
+  },
+  {
+    path: "/payment",
+    name: "payment",
+    component: paymentPage,
   },
   {
     path: "/auth/loginPage",

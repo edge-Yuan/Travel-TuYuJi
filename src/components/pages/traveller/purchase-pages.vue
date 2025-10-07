@@ -3,8 +3,8 @@
     <!-- 页面标题 -->
     <div class="page-header">
       <el-breadcrumb separator-class="el-icon-arrow-right">
-        <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-        <el-breadcrumb-item :to="{ path: '/cart' }">购物车</el-breadcrumb-item>
+        <el-breadcrumb-item :to="{ path: '/traveller/packageDetail' }">首页</el-breadcrumb-item>
+        <el-breadcrumb-item :to="getPackageDetailRoute()">套餐内容</el-breadcrumb-item>
         <el-breadcrumb-item>确认订单</el-breadcrumb-item>
       </el-breadcrumb>
       <h1 class="title">确认订单</h1>
@@ -84,7 +84,7 @@
         <!-- 支付方式 -->
         <div class="order-section payment-section">
           <h2 class="section-title">
-            <i class="el-icon-credit-card"></i> 支付方式
+            <i class="el-icon-wallet"></i> 支付方式
           </h2>
 
           <div class="payment-methods">
@@ -102,10 +102,23 @@
           </div>
         </div>
 
+        <!-- 出行信息 -->
+        <div class="order-section travel-section">
+          <h2 class="section-title">
+            <i class="el-icon-user"></i> 出行信息
+          </h2>
+
+          <div class="travel-item">
+            <span class="label">出行人数</span>
+            <el-input-number v-model="travellers" :min="1" :max="99"></el-input-number>
+            <span class="unit">人</span>
+          </div>
+        </div>
+
         <!-- 备注信息 -->
         <div class="order-section remark-section">
           <h2 class="section-title">
-            <i class="el-icon-comment"></i> 订单备注
+            <i class="el-icon-chat-line-round"></i> 订单备注
           </h2>
 
           <el-input type="textarea" placeholder="请输入订单备注信息，如特殊的收货要求等" v-model="orderRemark" :rows="3"
@@ -234,7 +247,7 @@
       custom-class="success-dialog">
       <div class="success-content">
         <div class="success-icon">
-          <i class="el-icon-check-circle"></i>
+          <i class="el-icon-success"></i>
         </div>
         <div class="success-message">
           订单提交成功！
@@ -251,7 +264,7 @@
         <el-button type="primary" @click="gotoPayment">
           去支付
         </el-button>
-        <el-button @click="showSuccessDialog = false">
+        <el-button @click="viewOrder">
           查看订单
         </el-button>
       </div>
@@ -260,76 +273,30 @@
 </template>
 
 <script>
+import request from '@/utils/request';
+
 export default {
   name: 'purchasePages',
   data() {
     return {
+      // 用户ID建议从登录态获取，这里先占位
+      userId: 10003,
+
       // 收货地址相关
-      addresses: [
-        {
-          id: 1,
-          name: '张先生',
-          phone: '138****6789',
-          province: '北京市',
-          city: '北京市',
-          district: '朝阳区',
-          detail: '建国路88号现代城5号楼1203室',
-          isDefault: true
-        },
-        {
-          id: 2,
-          name: '张先生',
-          phone: '138****6789',
-          province: '上海市',
-          city: '上海市',
-          district: '浦东新区',
-          detail: '张江高科技园区博云路2号',
-          isDefault: false
-        }
-      ],
+      addresses: [],
       selectedAddress: null,
       showAddressDialog: false,
 
-      // 商品信息
+      // 商品信息（建议从路由或购物车接口注入，这里保留原始结构作为兜底）
       orderProducts: [
-        {
-          id: 1,
-          name: 'Apple iPhone 13 Pro 256GB 星光色',
-          image: 'https://picsum.photos/id/1/80/80',
-          price: 7999,
-          quantity: 1,
-          attrs: ['颜色: 星光色', '容量: 256GB']
-        },
-        {
-          id: 2,
-          name: 'Apple AirPods Pro 主动降噪无线蓝牙耳机',
-          image: 'https://picsum.photos/id/2/80/80',
-          price: 1799,
-          quantity: 1,
-          attrs: ['标准版']
-        }
+        // 示例：如果外部已注入，可在 mounted 覆盖
+        // { id: 123, name: '某线路', image: '...', price: 1999, quantity: 1, attrs: [] }
       ],
 
-      // 支付方式
+      // 支付方式（对齐后端：仅微信/支付宝）
       paymentMethods: [
-        {
-          value: 'wechat',
-          name: '微信支付',
-          icon: 'el-icon-wechat',
-          promotion: '首单立减5元'
-        },
-        {
-          value: 'alipay',
-          name: '支付宝',
-          icon: 'el-icon-ali-pay',
-          promotion: ''
-        },
-        {
-          value: 'unionpay',
-          name: '银联支付',
-          icon: 'el-icon-credit-card',
-          promotion: '满2000减30'
-        }
+        { value: 'wechat', name: '微信支付', icon: 'el-icon-wechat', promotion: '首单立减5元' },
+        { value: 'alipay', name: '支付宝', icon: 'el-icon-ali-pay', promotion: '' }
       ],
       selectedPayment: 'wechat',
 
@@ -337,28 +304,13 @@ export default {
       orderRemark: '',
 
       // 优惠券相关
-      coupons: [
-        {
-          id: 1,
-          name: '满1000减50',
-          value: 50,
-          minSpend: 1000,
-          expiryDate: '2023-12-31'
-        },
-        {
-          id: 2,
-          name: '满5000减300',
-          value: 300,
-          minSpend: 5000,
-          expiryDate: '2023-11-30'
-        }
-      ],
+      coupons: [],
       selectedCoupon: null,
       selectedCouponId: '',
       showCouponDialog: false,
 
       // 订单金额相关
-      shippingFee: 0, // 满一定金额免运费
+      shippingFee: 0,
       discount: 0,
 
       // 协议同意
@@ -366,81 +318,246 @@ export default {
 
       // 提交成功相关
       showSuccessDialog: false,
-      orderNumber: ''
+      orderNumber: '',
+      orderId: null,
+
+      // 可能需要的下单上下文（如产品ID/出行日期/人数），请按你的实际来源赋值
+      productId: null,
+      bookingDate: null,   // '2025-10-03'
+      travellers: 1,       // 出行人数
+      specialNeeds: null   // 特殊需求
     };
   },
   computed: {
-    // 计算商品总价
     totalPrice() {
       return this.orderProducts.reduce((sum, product) => {
         return sum + (product.price * product.quantity);
       }, 0);
+    },
+    totalQuantity() {
+      return this.orderProducts.reduce((sum, product) => sum + product.quantity, 0);
     }
   },
   watch: {
-    // 监听优惠券变化，更新折扣
     selectedCoupon(newVal) {
-      this.discount = newVal ? newVal.value : 0;
+      this.discount = newVal ? Number(newVal.discountValue || newVal.value || 0) : 0;
     },
-    // 监听商品总价变化，更新运费
     totalPrice(newVal) {
-      // 满2000免运费
       this.shippingFee = newVal >= 2000 ? 0 : 15;
+    },
+    // 当仅有单个商品时，将出行人数同步到商品数量，保持金额一致
+    travellers(newVal) {
+      const count = Number(newVal) || 1;
+      if (Array.isArray(this.orderProducts) && this.orderProducts.length === 1) {
+        this.$set(this.orderProducts[0], 'quantity', count);
+      }
     }
   },
   mounted() {
-    // 默认选中默认地址
-    this.selectedAddress = this.addresses.find(addr => addr.isDefault) || this.addresses[0];
+    // 加载地址与优惠券
+    this.fetchAddresses();
+    this.fetchAvailableCoupons();
 
-    // 计算初始运费
+    // 尝试从路由/本地存储恢复商品信息
+    this.loadOrderProductsFromRoute();
+    if (!this.orderProducts || this.orderProducts.length === 0) {
+      this.loadOrderProductsFromStorage();
+    }
+
+    // 默认选中默认地址（接口已按 isDefault 排序）
+    // 运费初始化
     this.shippingFee = this.totalPrice >= 2000 ? 0 : 15;
   },
   methods: {
-    // 选择地址
+    // 统一判断后端返回是否成功
+    isSuccess(res) {
+      if (!res) return false;
+      // 常见兼容：code === 200 | code === 1 | success === true
+      return res.code === 200 || res.code === 1 || res.success === true;
+    },
+    // 规范化商品结构
+    normalizeProducts(list) {
+      if (!Array.isArray(list)) return [];
+      return list
+        .filter(Boolean)
+        .map((p) => ({
+          id: p.id || p.productId || p.spuId || p.packageId || null,
+          name: p.name || p.title || p.productName || '商品',
+          image: p.image || p.cover || p.imgUrl || '',
+          price: Number(p.price || p.salePrice || p.finalPrice || 0),
+          quantity: Number(p.quantity || p.count || 1),
+          attrs: Array.isArray(p.attrs) ? p.attrs : (p.specs ? [].concat(p.specs) : [])
+        }))
+        .filter((p) => p.id);
+    },
+    // 从路由参数/查询获取商品
+    loadOrderProductsFromRoute() {
+      try {
+        const qp = this.$route?.query || {};
+        const pp = this.$route?.params || {};
+        let incoming = [];
+        if (pp.orderProducts) {
+          incoming = Array.isArray(pp.orderProducts)
+            ? pp.orderProducts
+            : JSON.parse(pp.orderProducts || '[]');
+        } else if (qp.orderProducts) {
+          incoming = Array.isArray(qp.orderProducts)
+            ? qp.orderProducts
+            : JSON.parse(qp.orderProducts || '[]');
+        } else if (qp.productId) {
+          // 单商品快速下单（通过 query 传参）
+          const one = {
+            id: qp.productId,
+            name: qp.name || '商品',
+            image: qp.image || '',
+            price: Number(qp.price || 0),
+            quantity: Number(qp.quantity || 1),
+            attrs: []
+          };
+          incoming = [one];
+        }
+        const normalized = this.normalizeProducts(incoming);
+        if (normalized.length) {
+          this.orderProducts = normalized;
+          this.productId = normalized[0].id;
+          // 缓存一份，便于刷新恢复
+          localStorage.setItem('purchaseProducts', JSON.stringify(normalized));
+        }
+
+        // 预填下单上下文（可选）
+        if (qp.bookingDate) this.bookingDate = qp.bookingDate;
+        if (qp.travellers) this.travellers = Number(qp.travellers) || this.totalQuantity || 1;
+        if (qp.specialNeeds) this.specialNeeds = qp.specialNeeds;
+        if (qp.payType) {
+          const pt = Number(qp.payType);
+          this.selectedPayment = pt === 2 ? 'alipay' : 'wechat';
+        }
+      } catch (e) {
+        // ignore
+      }
+    },
+    // 从本地存储恢复
+    loadOrderProductsFromStorage() {
+      try {
+        const raw = localStorage.getItem('purchaseProducts') || sessionStorage.getItem('purchaseProducts');
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        const normalized = this.normalizeProducts(parsed);
+        if (normalized.length) {
+          this.orderProducts = normalized;
+          this.productId = normalized[0].id;
+        }
+      } catch (e) {
+        // ignore
+      }
+    },
+    // 统一获取 message
+    getMessage(res, fallback = '请求失败') {
+      return (res && (res.message || res.msg)) || fallback;
+    },
+    // 映射支付方式到后端枚举
+    mapPayType() {
+      return this.selectedPayment === 'wechat' ? 1 : 2;
+    },
+
+    // 地址：获取当前用户地址
+    async fetchAddresses() {
+      try {
+        const { data } = await request.get(`/travel-portal/userAddress/user/${this.userId}`);
+        if (this.isSuccess(data)) {
+          // 后端字段: receiverName/receiverPhone/province/city/district/detailAddress/isDefault
+          const list = data.data || data.result || [];
+          this.addresses = list.map(a => ({
+            id: a.addressId,
+            name: a.receiverName,
+            phone: a.receiverPhone,
+            province: a.province,
+            city: a.city,
+            district: a.district,
+            detail: a.detailAddress,
+            isDefault: !!a.isDefault,
+            raw: a
+          }));
+          this.selectedAddress = this.addresses.find(addr => addr.isDefault) || this.addresses[0] || null;
+        } else {
+          this.$message.error(this.getMessage(data, '获取地址失败'));
+        }
+      } catch (e) {
+        this.$message.error('获取地址失败');
+      }
+    },
     selectAddress(address) {
       this.selectedAddress = address;
     },
-    // 编辑地址（实际项目中会打开编辑表单）
     editAddress(address) {
       this.$message.info(`编辑地址: ${address.name}`);
     },
-    // 删除地址
-    deleteAddress(id) {
-      this.$confirm('确定要删除这个地址吗？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.addresses = this.addresses.filter(addr => addr.id !== id);
-        // 如果删除的是选中的地址，自动选择默认地址或第一个地址
-        if (this.selectedAddress && this.selectedAddress.id === id) {
-          this.selectedAddress = this.addresses.find(addr => addr.isDefault) || this.addresses[0];
+    async deleteAddress(id) {
+      try {
+        await this.$confirm('确定要删除这个地址吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        });
+        const { data } = await request.delete(`/travel-portal/userAddress/${id}`);
+        if (this.isSuccess(data)) {
+          this.$message.success('地址已删除');
+          await this.fetchAddresses();
+        } else {
+          this.$message.error(this.getMessage(data, '删除失败'));
         }
-        this.$message.success('地址已删除');
-      }).catch(() => {
-        // 取消删除
-      });
+      } catch {
+        // 取消
+      }
     },
-    // 添加新地址（实际项目中会打开添加表单）
     addNewAddress() {
       this.$message.info('打开新增地址表单');
     },
 
-    // 选择优惠券
-    selectCoupon(coupon) {
-      // 检查是否满足使用条件
-      if (this.totalPrice >= coupon.minSpend) {
+    // 优惠券
+    async fetchAvailableCoupons() {
+      try {
+        const { data } = await request.get('/travel-portal/coupon/available');
+        if (this.isSuccess(data)) {
+          // 映射：couponId/couponName/discountValue/minSpend/start_date/end_date
+          const list = data.data || data.result || [];
+          this.coupons = list.map(c => ({
+            id: c.couponId,
+            name: c.couponName,
+            value: Number(c.discountValue || 0),
+            minSpend: Number(c.minSpend || 0),
+            expiryDate: c.endDate
+          }));
+        }
+      } catch {
+        // 忽略
+      }
+    },
+    async checkCoupon(coupon) {
+      try {
+        const orderAmount = (this.totalPrice + this.shippingFee).toFixed(2);
+        const { data } = await request.get(`/travel-portal/coupon/check/${coupon.id}`, {
+          params: { orderAmount }
+        });
+        return this.isSuccess(data);
+      } catch {
+        return false;
+      }
+    },
+    async selectCoupon(coupon) {
+      const ok = await this.checkCoupon(coupon);
+      if (ok && this.totalPrice >= coupon.minSpend) {
         this.selectedCoupon = coupon;
         this.selectedCouponId = coupon.id;
       } else {
-        this.$message.warning(`满${coupon.minSpend}元才能使用该优惠券`);
+        this.$message.warning('所选优惠券不满足使用条件或已失效');
       }
     },
-    // 确认选择优惠券
-    confirmCoupon() {
+    async confirmCoupon() {
       if (this.selectedCouponId) {
         const coupon = this.coupons.find(c => c.id === this.selectedCouponId);
-        if (coupon && this.totalPrice >= coupon.minSpend) {
+        const ok = coupon ? await this.checkCoupon(coupon) : false;
+        if (ok && coupon && this.totalPrice >= coupon.minSpend) {
           this.selectedCoupon = coupon;
         } else {
           this.selectedCoupon = null;
@@ -454,40 +571,117 @@ export default {
     },
 
     // 提交订单
-    submitOrder() {
+    async submitOrder() {
       if (!this.selectedAddress) {
         this.$message.error('请选择收货地址');
         return;
       }
-
       if (!this.agreeAgreement) {
         this.$message.error('请同意用户服务协议和隐私政策');
         return;
       }
+      // 选择有效支付方式
+      const payType = this.mapPayType();
 
-      // 模拟提交订单
-      this.$loading({
+      const loading = this.$loading({
         lock: true,
         text: '提交订单中...',
         spinner: 'el-icon-loading',
         background: 'rgba(0, 0, 0, 0.7)'
       });
 
-      // 模拟API请求延迟
-      setTimeout(() => {
-        this.$loading().close();
-        // 生成随机订单号
-        this.orderNumber = 'ORD' + Date.now() + Math.floor(Math.random() * 1000);
-        this.showSuccessDialog = true;
-      }, 1500);
+      try {
+        // 这里 productId 的来源需按你的业务填充：
+        // - 如果是单商品详情页下单：外部应设置 this.productId
+        // - 如果是购物车多商品：后端当前模型是单 productId，可按业务改为批量，或此处暂取第一个
+        const firstItem = this.orderProducts[0];
+        const productId = this.productId || (firstItem && firstItem.id);
+        const productQuantity = this.totalQuantity;
+
+        if (!productId) {
+          this.$message.error('缺少 productId，无法提交订单');
+          return;
+        }
+
+        const payload = {
+          userId: this.userId,
+          productId,
+          totalPrice: (this.totalPrice + this.shippingFee - (this.discount || 0)).toFixed(2),
+          payType,
+          bookingDate: this.bookingDate,              // 如需必填，请确保外部传入
+          travellers: this.travellers || 1,
+          specialNeeds: this.specialNeeds || null,
+
+          // 地址信息（后端字段名）
+          receiverName: this.selectedAddress.name,
+          receiverPhone: this.selectedAddress.phone,
+          receiverProvince: this.selectedAddress.province,
+          receiverCity: this.selectedAddress.city,
+          receiverDistrict: this.selectedAddress.district,
+          receiverAddress: this.selectedAddress.detail,
+
+          // 备注
+          orderRemark: this.orderRemark || null,
+
+          // 优惠
+          couponId: this.selectedCoupon ? this.selectedCoupon.id : null,
+          couponDiscount: this.selectedCoupon ? Number(this.selectedCoupon.value || 0) : 0,
+
+          // 运费与数量
+          shippingFee: Number(this.shippingFee || 0),
+          productQuantity
+        };
+
+        const { data } = await request.post('/travel-portal/tourOrder/submit', payload);
+        if (this.isSuccess(data) && (data.data || data.result)) {
+          const body = data.data || data.result;
+          this.orderId = body.orderId;
+          this.orderNumber = body.orderNumber || '';
+          this.showSuccessDialog = true;
+        } else {
+          this.$message.error(this.getMessage(data, '提交订单失败'));
+        }
+      } catch (e) {
+        this.$message.error('提交订单失败');
+      } finally {
+        loading.close();
+      }
     },
 
-    // 前往支付
     gotoPayment() {
       this.showSuccessDialog = false;
-      this.$message.success('前往支付页面');
-      // 实际项目中会跳转到支付页面
-      // this.$router.push(`/payment/${this.orderNumber}`);
+      const amount = (this.totalPrice + this.shippingFee - (this.discount || 0)).toFixed(2);
+      const payType = this.mapPayType();
+      this.$router.push({
+        path: '/payment',
+        query: {
+          orderId: String(this.orderId || ''),
+          orderNumber: String(this.orderNumber || ''),
+          amount: String(amount),
+          payType: String(payType)
+        }
+      });
+    },
+    viewOrder() {
+      this.showSuccessDialog = false;
+      this.$router.push({
+        path: '/traveller/order',
+        query: { orderId: String(this.orderId || '') }
+      });
+    },
+
+    // 获取套餐内容页面路由
+    getPackageDetailRoute() {
+      // 如果有产品ID，返回到套餐内容页面并携带产品ID参数
+      if (this.productId) {
+        return {
+          path: '/traveller/order',
+          query: { productId: this.productId }
+        };
+      }
+      
+      // 如果没有产品ID，返回到首页
+      return { path: '/' };
     }
   }
 };
@@ -738,13 +932,53 @@ export default {
   color: var(--text-primary);
 }
 
+/* 出行信息样式优化 */
+.travel-section .travel-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px dashed var(--border-color);
+  border-radius: var(--border-radius);
+  background: linear-gradient(135deg, #f9fafc, #ffffff);
+  transition: all 0.3s ease;
+}
+
+.travel-section .travel-item:hover {
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-light);
+  transform: translateY(-1px);
+}
+
+.travel-section .label {
+  min-width: 80px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.travel-section .unit {
+  color: var(--text-secondary);
+}
+
+.travel-section ::v-deep .el-input-number {
+  border-radius: 8px;
+}
+
+.travel-section ::v-deep .el-input-number .el-input__inner {
+  text-align: center;
+}
+
 /* 备注信息样式优化 */
 .remark-input::v-deep .el-textarea__inner {
   border-radius: var(--border-radius);
-  border: 1px solid var(--border-color);
+  border: none;
   padding: 12px 16px;
   font-size: 14px;
   transition: all 0.3s ease;
+  height: 120px;
+  resize: none;
+  background-color: #f9fafc;
+  outline: none;
 }
 
 .remark-input::v-deep .el-textarea__inner:focus {
@@ -1067,7 +1301,7 @@ export default {
 
 .success-icon {
   font-size: 64px;
-  color: var(--success-color);
+  color: #67c23a;
   margin-bottom: 20px;
   animation: bounceIn 0.6s ease;
 }

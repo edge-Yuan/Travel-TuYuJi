@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* 清除所有元素的默认内外边距 */
 * {
   margin: 0;

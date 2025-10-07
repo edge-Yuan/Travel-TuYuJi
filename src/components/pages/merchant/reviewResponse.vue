@@ -2,208 +2,341 @@
   <div class="review-response">
     <!-- 页面标题 -->
     <div class="page-header">
-      <h1 class="title">评价回应</h1>
-      <p class="subtitle">查看和回复游客评价，管理客户反馈</p>
+      <div class="header-content">
+        <div class="title-section">
+          <h1 class="title">评价回应</h1>
+          <p class="subtitle">查看和回复游客评价，管理客户反馈</p>
+        </div>
+        <div class="header-actions">
+          <el-button type="primary" icon="el-icon-edit" @click="batchReply">批量回复</el-button>
+          <el-button type="success" icon="el-icon-download" @click="exportReviews">导出评价</el-button>
+        </div>
+      </div>
     </div>
 
     <!-- 评价统计 -->
-    <div class="stats-section">
-      <el-row :gutter="20">
-        <el-col :span="6">
-          <div class="stat-card">
-            <div class="stat-icon total">
-              <i class="el-icon-star-on"></i>
+    <div class="stats-panel">
+      <el-card class="stats-card">
+        <div slot="header" class="stats-header">
+          <i class="el-icon-data-line"></i>
+          <span>评价统计概览</span>
+        </div>
+        <el-row :gutter="20">
+          <el-col :span="6">
+            <div class="stat-card">
+              <div class="stat-icon total">
+                <i class="el-icon-star-on"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number">{{ stats.totalReviews }}</div>
+                <div class="stat-label">总评价数</div>
+                <div class="stat-trend">
+                  <i class="el-icon-top"></i>
+                  <span>+15%</span>
+                </div>
+              </div>
             </div>
-            <div class="stat-content">
-              <div class="stat-number">{{ stats.totalReviews }}</div>
-              <div class="stat-label">总评价数</div>
+          </el-col>
+          <el-col :span="6">
+            <div class="stat-card">
+              <div class="stat-icon average">
+                <i class="el-icon-trophy"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number">{{ stats.averageRating }}</div>
+                <div class="stat-label">平均评分</div>
+                <div class="stat-trend">
+                  <i class="el-icon-top"></i>
+                  <span>+0.2</span>
+                </div>
+              </div>
             </div>
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="stat-card">
-            <div class="stat-icon average">
-              <i class="el-icon-trophy"></i>
+          </el-col>
+          <el-col :span="6">
+            <div class="stat-card">
+              <div class="stat-icon positive">
+                <i class="el-icon-thumb"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number">{{ stats.positiveReviews }}</div>
+                <div class="stat-label">好评数</div>
+                <div class="stat-trend">
+                  <i class="el-icon-top"></i>
+                  <span>+8%</span>
+                </div>
+              </div>
             </div>
-            <div class="stat-content">
-              <div class="stat-number">{{ stats.averageRating }}</div>
-              <div class="stat-label">平均评分</div>
+          </el-col>
+          <el-col :span="6">
+            <div class="stat-card">
+              <div class="stat-icon negative">
+                <i class="el-icon-warning"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number">{{ stats.negativeReviews }}</div>
+                <div class="stat-label">差评数</div>
+                <div class="stat-trend">
+                  <i class="el-icon-bottom"></i>
+                  <span>-12%</span>
+                </div>
+              </div>
             </div>
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="stat-card">
-            <div class="stat-icon positive">
-              <i class="el-icon-thumb"></i>
-            </div>
-            <div class="stat-content">
-              <div class="stat-number">{{ stats.positiveReviews }}</div>
-              <div class="stat-label">好评数</div>
-            </div>
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="stat-card">
-            <div class="stat-icon negative">
-              <i class="el-icon-warning"></i>
-            </div>
-            <div class="stat-content">
-              <div class="stat-number">{{ stats.negativeReviews }}</div>
-              <div class="stat-label">差评数</div>
-            </div>
-          </div>
-        </el-col>
-      </el-row>
+          </el-col>
+        </el-row>
+      </el-card>
     </div>
 
     <!-- 筛选和搜索 -->
     <div class="filter-section">
-      <el-row :gutter="20">
-        <el-col :span="4">
-          <el-select v-model="filters.rating" placeholder="评分筛选" clearable>
-            <el-option label="全部" value=""></el-option>
-            <el-option label="5星" value="5"></el-option>
-            <el-option label="4星" value="4"></el-option>
-            <el-option label="3星" value="3"></el-option>
-            <el-option label="2星" value="2"></el-option>
-            <el-option label="1星" value="1"></el-option>
-          </el-select>
-        </el-col>
-        <el-col :span="4">
-          <el-select v-model="filters.status" placeholder="回复状态" clearable>
-            <el-option label="全部" value=""></el-option>
-            <el-option label="已回复" value="replied"></el-option>
-            <el-option label="未回复" value="unreplied"></el-option>
-            <el-option label="需跟进" value="follow_up"></el-option>
-          </el-select>
-        </el-col>
-        <el-col :span="4">
-          <el-select v-model="filters.productType" placeholder="产品类型" clearable>
-            <el-option label="全部" value=""></el-option>
-            <el-option label="酒店客房" value="hotel"></el-option>
-            <el-option label="旅行路线" value="route"></el-option>
-            <el-option label="门票" value="ticket"></el-option>
-          </el-select>
-        </el-col>
-        <el-col :span="6">
-          <el-date-picker
-            v-model="filters.dateRange"
-            type="daterange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期">
-          </el-date-picker>
-        </el-col>
-        <el-col :span="6">
-          <el-input
-            v-model="filters.keyword"
-            placeholder="搜索客户姓名或评价内容"
-            prefix-icon="el-icon-search"
-            clearable>
-          </el-input>
-        </el-col>
-      </el-row>
-      <div class="filter-actions">
-        <el-button type="primary" @click="searchReviews">搜索</el-button>
-        <el-button @click="resetFilters">重置</el-button>
-        <el-button type="success" @click="batchReply">
-          <i class="el-icon-edit"></i> 批量回复
-        </el-button>
-      </div>
+      <el-card class="filter-card">
+        <div class="filter-container">
+          <div class="filter-header">
+            <div class="filter-title">
+              <i class="el-icon-filter"></i>
+              <span>筛选条件</span>
+            </div>
+            <div class="filter-actions">
+              <el-button type="primary" class="search-btn" @click="searchReviews">
+                <i class="el-icon-search"></i>
+                搜索
+              </el-button>
+              <el-button class="reset-btn" @click="resetFilters">
+                <i class="el-icon-refresh"></i>
+                重置
+              </el-button>
+            </div>
+          </div>
+          
+          <div class="filter-content">
+            <div class="filter-row">
+              <div class="filter-item">
+                <div class="filter-label">
+                  <i class="el-icon-star-on"></i>
+                  <span>评分筛选</span>
+                </div>
+                <el-select v-model="filters.rating" placeholder="请选择评分" clearable class="filter-select">
+                  <el-option label="全部评分" value=""></el-option>
+                  <el-option label="5星" value="5">
+                    <span style="float: left">5星</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">非常满意</span>
+                  </el-option>
+                  <el-option label="4星" value="4">
+                    <span style="float: left">4星</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">满意</span>
+                  </el-option>
+                  <el-option label="3星" value="3">
+                    <span style="float: left">3星</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">一般</span>
+                  </el-option>
+                  <el-option label="2星" value="2">
+                    <span style="float: left">2星</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">不满意</span>
+                  </el-option>
+                  <el-option label="1星" value="1">
+                    <span style="float: left">1星</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">非常不满意</span>
+                  </el-option>
+                </el-select>
+              </div>
+              
+              <div class="filter-item">
+                <div class="filter-label">
+                  <i class="el-icon-s-order"></i>
+                  <span>回复状态</span>
+                </div>
+                <el-select v-model="filters.status" placeholder="请选择回复状态" clearable class="filter-select">
+                  <el-option label="全部状态" value=""></el-option>
+                  <el-option label="已回复" value="replied">
+                    <span style="float: left">已回复</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">已完成回复</span>
+                  </el-option>
+                  <el-option label="未回复" value="unreplied">
+                    <span style="float: left">未回复</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">待回复</span>
+                  </el-option>
+                  <el-option label="需跟进" value="follow_up">
+                    <span style="float: left">需跟进</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">需要处理</span>
+                  </el-option>
+                </el-select>
+              </div>
+              
+              <div class="filter-item">
+                <div class="filter-label">
+                  <i class="el-icon-goods"></i>
+                  <span>产品类型</span>
+                </div>
+                <el-select v-model="filters.productType" placeholder="请选择产品类型" clearable class="filter-select">
+                  <el-option label="全部类型" value=""></el-option>
+                  <el-option label="酒店客房" value="hotel">
+                    <span style="float: left">酒店客房</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">住宿服务</span>
+                  </el-option>
+                  <el-option label="旅行路线" value="route">
+                    <span style="float: left">旅行路线</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">旅游套餐</span>
+                  </el-option>
+                  <el-option label="门票" value="ticket">
+                    <span style="float: left">门票</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">景点门票</span>
+                  </el-option>
+                </el-select>
+              </div>
+              
+              <div class="filter-item date-filter-item">
+                <div class="filter-label">
+                  <i class="el-icon-date"></i>
+                  <span>评价时间</span>
+                </div>
+                <el-date-picker
+                  v-model="filters.dateRange"
+                  type="daterange"
+                  range-separator="至"
+                  start-placeholder="开始日期"
+                  end-placeholder="结束日期"
+                  class="filter-date-picker"
+                  style="width: 100%; min-width: 320px;">
+                </el-date-picker>
+              </div>
+              
+              <div class="filter-item">
+                <div class="filter-label">
+                  <i class="el-icon-search"></i>
+                  <span>关键词搜索</span>
+                </div>
+                <el-input
+                  v-model="filters.keyword"
+                  placeholder="搜索客户姓名或评价内容"
+                  prefix-icon="el-icon-search"
+                  clearable
+                  class="filter-input">
+                </el-input>
+              </div>
+            </div>
+          </div>
+        </div>
+      </el-card>
     </div>
 
     <!-- 评价列表 -->
     <div class="review-list">
-      <el-table :data="filteredReviews" v-loading="loading" stripe @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55"></el-table-column>
-        <el-table-column prop="customerName" label="客户" width="120">
-          <template slot-scope="scope">
-            <div class="customer-info">
-              <img :src="scope.row.customerAvatar" class="customer-avatar" />
-              <div class="customer-details">
-                <div class="customer-name">{{ scope.row.customerName }}</div>
-                <div class="customer-level">
-                  <el-tag :type="getLevelTagType(scope.row.customerLevel)" size="mini">
-                    {{ getLevelName(scope.row.customerLevel) }}
-                  </el-tag>
+      <el-card class="list-card">
+        <div slot="header" class="list-header">
+          <div class="list-title">
+            <i class="el-icon-list"></i>
+            <span>评价列表</span>
+          </div>
+          <div class="list-actions">
+            <el-button size="small" icon="el-icon-refresh" @click="refreshReviews">刷新</el-button>
+            <el-button size="small" icon="el-icon-download" @click="exportReviews">导出</el-button>
+          </div>
+        </div>
+        
+        <el-table :data="filteredReviews" v-loading="loading" stripe @selection-change="handleSelectionChange" class="review-table" :header-cell-style="{ textAlign: 'center' }" :cell-style="{ textAlign: 'center' }">
+          <el-table-column type="selection" width="55" align="center"></el-table-column>
+          <el-table-column prop="customerName" label="客户" width="120" align="center">
+            <template slot-scope="scope">
+              <div class="customer-info">
+                <el-image :src="scope.row.customerAvatar" class="customer-avatar" fit="cover">
+                  <div slot="error" class="image-slot">
+                    <i class="el-icon-user"></i>
+                  </div>
+                </el-image>
+                <div class="customer-details">
+                  <div class="customer-name">{{ scope.row.customerName }}</div>
+                  <div class="customer-level">
+                    <el-tag :type="getLevelTagType(scope.row.customerLevel)" size="mini">
+                      {{ getLevelName(scope.row.customerLevel) }}
+                    </el-tag>
+                  </div>
                 </div>
               </div>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="productName" label="产品" min-width="200">
-          <template slot-scope="scope">
-            <div class="product-info">
-              <img :src="scope.row.productImage" class="product-image" />
-              <div class="product-details">
-                <div class="product-name">{{ scope.row.productName }}</div>
-                <div class="product-type">
-                  <el-tag :type="getTypeTagType(scope.row.productType)" size="mini">
-                    {{ getTypeName(scope.row.productType) }}
-                  </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="productName" label="产品" min-width="200" align="center">
+            <template slot-scope="scope">
+              <div class="product-info">
+                <el-image :src="scope.row.productImage" class="product-image" fit="cover">
+                  <div slot="error" class="image-slot">
+                    <i class="el-icon-picture-outline"></i>
+                  </div>
+                </el-image>
+                <div class="product-details">
+                  <div class="product-name">{{ scope.row.productName }}</div>
+                  <div class="product-type">
+                    <el-tag :type="getTypeTagType(scope.row.productType)" size="mini">
+                      {{ getTypeName(scope.row.productType) }}
+                    </el-tag>
+                  </div>
                 </div>
               </div>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="rating" label="评分" width="120">
-          <template slot-scope="scope">
-            <div class="rating-section">
-              <el-rate v-model="scope.row.rating" disabled show-score text-color="#ff9900"></el-rate>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="content" label="评价内容" min-width="300">
-          <template slot-scope="scope">
-            <div class="review-content">
-              <p class="content-text">{{ scope.row.content }}</p>
-              <div v-if="scope.row.images && scope.row.images.length" class="review-images">
-                <img
-                  v-for="image in scope.row.images"
-                  :key="image"
-                  :src="image"
-                  class="review-image"
-                  @click="previewImage(image)"
-                />
+            </template>
+          </el-table-column>
+          <el-table-column prop="rating" label="评分" width="120" align="center">
+            <template slot-scope="scope">
+              <div class="rating-section">
+                <el-rate v-model="scope.row.rating" disabled show-score text-color="#ff9900"></el-rate>
               </div>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="reviewTime" label="评价时间" width="160"></el-table-column>
-        <el-table-column prop="replyStatus" label="回复状态" width="100">
-          <template slot-scope="scope">
-            <el-tag :type="getReplyStatusTagType(scope.row.replyStatus)" size="mini">
-              {{ getReplyStatusName(scope.row.replyStatus) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
-          <template slot-scope="scope">
-            <el-button size="mini" @click="viewReviewDetail(scope.row)">详情</el-button>
-            <el-button 
-              size="mini" 
-              type="primary" 
-              v-if="scope.row.replyStatus === 'unreplied'"
-              @click="replyReview(scope.row)">
-              回复
-            </el-button>
-            <el-button 
-              size="mini" 
-              type="warning" 
-              v-if="scope.row.replyStatus === 'replied'"
-              @click="editReply(scope.row)">
-              编辑回复
-            </el-button>
-            <el-button 
-              size="mini" 
-              type="info" 
-              v-if="scope.row.rating <= 3"
-              @click="markFollowUp(scope.row)">
-              标记跟进
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+            </template>
+          </el-table-column>
+          <el-table-column prop="content" label="评价内容" min-width="300" align="center">
+            <template slot-scope="scope">
+              <div class="review-content">
+                <p class="content-text">{{ scope.row.content }}</p>
+                <div v-if="scope.row.images && scope.row.images.length" class="review-images">
+                  <img
+                    v-for="image in scope.row.images"
+                    :key="image"
+                    :src="image"
+                    class="review-image"
+                    @click="previewImage(image)"
+                  />
+                </div>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="reviewTime" label="评价时间" width="180" align="center">
+            <template slot-scope="scope">
+              <span class="review-time">{{ scope.row.reviewTime }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="replyStatus" label="回复状态" width="100" align="center">
+            <template slot-scope="scope">
+              <el-tag :type="getReplyStatusTagType(scope.row.replyStatus)" size="mini">
+                {{ getReplyStatusName(scope.row.replyStatus) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" fixed="right">
+            <template slot-scope="scope">
+              <div class="action-buttons">
+                <el-button size="mini" @click="viewReviewDetail(scope.row)">详情</el-button>
+                <el-button 
+                  size="mini" 
+                  type="primary" 
+                  v-if="scope.row.replyStatus === 'unreplied'"
+                  @click="replyReview(scope.row)">
+                  回复
+                </el-button>
+                <el-button 
+                  size="mini" 
+                  type="warning" 
+                  v-if="scope.row.replyStatus === 'replied'"
+                  @click="editReply(scope.row)">
+                  编辑回复
+                </el-button>
+                <el-button 
+                  size="mini" 
+                  type="info" 
+                  v-if="scope.row.rating <= 3"
+                  @click="markFollowUp(scope.row)">
+                  标记跟进
+                </el-button>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
     </div>
 
     <!-- 分页 -->
@@ -292,7 +425,7 @@
     <el-dialog title="回复评价" :visible.sync="showReplyDialog" width="600px">
       <el-form :model="replyForm" label-width="100px">
         <el-form-item label="回复内容">
-          <el-input type="textarea" v-model="replyForm.content" :rows="6" placeholder="请输入回复内容"></el-input>
+          <el-input type="textarea" v-model="replyForm.content" :rows="6" placeholder="请输入回复内容" resize="none" class="fixed-textarea"></el-input>
         </el-form-item>
         
         <el-form-item label="回复类型">
@@ -311,7 +444,7 @@
         </el-form-item>
         
         <el-form-item label="内部备注">
-          <el-input type="textarea" v-model="replyForm.internalNotes" :rows="3" placeholder="内部备注，不会显示给客户"></el-input>
+          <el-input type="textarea" v-model="replyForm.internalNotes" :rows="3" placeholder="内部备注，不会显示给客户" resize="none" class="fixed-textarea"></el-input>
         </el-form-item>
       </el-form>
       
@@ -335,7 +468,7 @@
         </el-form-item>
         
         <el-form-item label="回复内容" v-if="batchReplyForm.template === 'custom'">
-          <el-input type="textarea" v-model="batchReplyForm.content" :rows="6" placeholder="请输入回复内容"></el-input>
+          <el-input type="textarea" v-model="batchReplyForm.content" :rows="6" placeholder="请输入回复内容" resize="none" class="fixed-textarea"></el-input>
         </el-form-item>
         
         <el-form-item label="选择评价">
@@ -519,6 +652,18 @@ export default {
     }
   },
   methods: {
+    exportReviews() {
+      this.$message.success('评价数据导出成功');
+    },
+    
+    refreshReviews() {
+      this.loading = true;
+      setTimeout(() => {
+        this.loading = false;
+        this.$message.success('数据刷新成功');
+      }, 1000);
+    },
+    
     searchReviews() {
       // 搜索逻辑已在computed中实现
     },
@@ -689,26 +834,70 @@ export default {
 
 <style scoped>
 .review-response {
-  padding: 20px;
+  padding: 24px;
+  min-height: 100vh;
 }
 
+
+/* 页面标题 */
 .page-header {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title-section {
+  flex: 1;
 }
 
 .title {
-  font-size: 24px;
-  color: #333;
-  margin-bottom: 8px;
+  font-size: 28px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 8px 0;
 }
 
 .subtitle {
-  color: #666;
+  color: #7f8c8d;
   margin: 0;
+  font-size: 14px;
 }
 
-.stats-section {
-  margin-bottom: 30px;
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* 统计面板 */
+.stats-panel {
+  margin-bottom: 24px;
+}
+
+.stats-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: none;
+}
+
+.stats-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.stats-header i {
+  color: #3b82f6;
 }
 
 .stat-card {
@@ -716,48 +905,65 @@ export default {
   align-items: center;
   padding: 20px;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
+  border: 1px solid #f0f2f5;
 }
 
 .stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: #e1e6eb;
 }
 
 .stat-icon {
   width: 60px;
   height: 60px;
-  border-radius: 50%;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-icon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+  border-radius: 12px;
 }
 
 .stat-icon.total {
-  background: linear-gradient(135deg, #ff9a9e, #fecfef);
-  color: #d63384;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
 }
 
 .stat-icon.average {
-  background: linear-gradient(135deg, #a8edea, #fed6e3);
-  color: #20c997;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
 }
 
 .stat-icon.positive {
-  background: linear-gradient(135deg, #d299c2, #fef9d7);
-  color: #28a745;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
 }
 
 .stat-icon.negative {
-  background: linear-gradient(135deg, #89f7fe, #66a6ff);
-  color: #6f42c1;
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  color: white;
 }
 
 .stat-icon i {
   font-size: 24px;
+  position: relative;
+  z-index: 1;
 }
 
 .stat-content {
@@ -765,57 +971,297 @@ export default {
 }
 
 .stat-number {
-  font-size: 28px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 5px;
+  font-size: 32px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 4px;
+  line-height: 1;
 }
 
 .stat-label {
   font-size: 14px;
-  color: #666;
+  color: #7f8c8d;
+  margin-bottom: 8px;
 }
 
+.stat-trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.stat-trend i {
+  font-size: 12px;
+}
+
+.stat-trend .el-icon-top {
+  color: #52c41a;
+}
+
+.stat-trend .el-icon-bottom {
+  color: #ff4d4f;
+}
+
+/* 筛选区域 */
 .filter-section {
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+}
+
+.filter-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: none;
+  overflow: hidden;
+}
+
+.filter-container {
+  padding: 0;
+}
+
+.filter-header {
+  background: linear-gradient(135deg, #2c5aa0 0%, #1e3a8a 100%);
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.filter-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .filter-actions {
-  margin-top: 15px;
-  text-align: right;
+  display: flex;
+  gap: 12px;
 }
 
-.filter-actions .el-button {
-  margin-left: 10px;
+.search-btn,
+.reset-btn {
+  height: 40px;
+  border-radius: 20px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+  padding: 0 20px;
+  min-width: 100px;
 }
 
+.search-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.search-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.reset-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.reset-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.filter-content {
+  padding: 24px;
+  background: #fafbfc;
+}
+
+.filter-row {
+  display: flex;
+  gap: 16px;
+  margin: 0;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+  max-width: 280px;
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.filter-label i {
+  color: #3b82f6;
+  font-size: 16px;
+}
+
+.filter-select,
+.filter-input,
+.filter-date-picker {
+  width: 100%;
+}
+
+.filter-select .el-input__inner,
+.filter-input .el-input__inner,
+.filter-date-picker .el-input__inner {
+  height: 44px;
+  line-height: 44px;
+  border-radius: 8px;
+  border: 1px solid #dcdfe6;
+  background: #fafbfc;
+  transition: all 0.3s ease;
+}
+
+.filter-select .el-input__inner:focus,
+.filter-input .el-input__inner:focus,
+.filter-date-picker .el-input__inner:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background: white;
+}
+
+.filter-select .el-input__inner:hover,
+.filter-input .el-input__inner:hover,
+.filter-date-picker .el-input__inner:hover {
+  border-color: #c0c4cc;
+  background: white;
+}
+
+/* 日期选择器特殊样式 */
+.date-filter-item {
+  flex: 1.5 !important;
+  min-width: 320px !important;
+  max-width: 400px !important;
+}
+
+.filter-date-picker .el-range-editor {
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  min-width: 320px !important;
+}
+
+.filter-date-picker .el-range-input {
+  min-width: 120px !important;
+  flex: 1;
+}
+
+.filter-date-picker .el-range-separator {
+  padding: 0 16px !important;
+  min-width: 32px !important;
+  display: inline-block !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+/* 评价列表 */
 .review-list {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+}
+
+.list-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: none;
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.list-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.list-title i {
+  color: #3b82f6;
+}
+
+.list-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.review-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.review-table .el-table th,
+.review-table .el-table td {
+  text-align: center !important;
+  vertical-align: middle !important;
 }
 
 .customer-info {
   display: flex;
   align-items: center;
+  justify-content: center;
+  text-align: left;
 }
 
 .customer-avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  object-fit: cover;
   margin-right: 10px;
+}
+
+.image-slot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background: #f5f7fa;
+  color: #c0c4cc;
+  font-size: 16px;
 }
 
 .customer-details {
   flex: 1;
+  text-align: left;
 }
 
 .customer-name {
   font-weight: 500;
   margin-bottom: 4px;
+  color: #2c3e50;
 }
 
 .customer-level {
@@ -825,23 +1271,26 @@ export default {
 .product-info {
   display: flex;
   align-items: center;
+  justify-content: center;
+  text-align: left;
 }
 
 .product-image {
   width: 60px;
   height: 60px;
-  object-fit: cover;
-  border-radius: 4px;
+  border-radius: 8px;
   margin-right: 12px;
 }
 
 .product-details {
   flex: 1;
+  text-align: left;
 }
 
 .product-name {
   font-weight: 500;
   margin-bottom: 4px;
+  color: #2c3e50;
 }
 
 .product-type {
@@ -854,12 +1303,13 @@ export default {
 
 .review-content {
   max-width: 300px;
+  text-align: left;
 }
 
 .content-text {
   margin-bottom: 10px;
   line-height: 1.5;
-  color: #333;
+  color: #2c3e50;
 }
 
 .review-images {
@@ -881,8 +1331,62 @@ export default {
   transform: scale(1.1);
 }
 
+.review-time {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  max-width: 100%;
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.action-buttons .el-button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  height: 28px;
+  line-height: 1;
+}
+
+.action-buttons .el-button--primary {
+  background: #1890ff;
+  border-color: #1890ff;
+}
+
+.action-buttons .el-button--primary:hover {
+  background: #40a9ff;
+  border-color: #40a9ff;
+}
+
+.action-buttons .el-button--warning {
+  background: #faad14;
+  border-color: #faad14;
+}
+
+.action-buttons .el-button--warning:hover {
+  background: #ffc53d;
+  border-color: #ffc53d;
+}
+
+.action-buttons .el-button--info {
+  background: #13c2c2;
+  border-color: #13c2c2;
+}
+
+.action-buttons .el-button--info:hover {
+  background: #36cfc9;
+  border-color: #36cfc9;
+}
+
+/* 分页 */
 .pagination {
   text-align: center;
+  margin-top: 24px;
 }
 
 .review-detail {
@@ -1055,5 +1559,28 @@ export default {
 
 .dialog-footer {
   text-align: right;
+}
+
+/* 弹窗输入框固定大小和去掉右下角图标 */
+.fixed-textarea .el-textarea__inner {
+  resize: none !important;
+  width: 100% !important;
+  min-height: 80px !important;
+  max-height: 80px !important;
+}
+
+.fixed-textarea .el-textarea__inner::-webkit-resizer {
+  display: none !important;
+}
+
+/* 所有弹窗中的输入框 */
+.el-dialog .el-input__inner,
+.el-dialog .el-textarea__inner {
+  width: 100% !important;
+  resize: none !important;
+}
+
+.el-dialog .el-textarea__inner::-webkit-resizer {
+  display: none !important;
 }
 </style>

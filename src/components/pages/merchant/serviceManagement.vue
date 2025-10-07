@@ -2,168 +2,282 @@
   <div class="service-management">
     <!-- 页面标题 -->
     <div class="page-header">
-      <h1 class="title">服务管理</h1>
-      <p class="subtitle">管理当日服务，记录服务情况，处理服务异常</p>
+      <div class="header-content">
+        <div class="title-section">
+          <h1 class="title">服务管理</h1>
+          <p class="subtitle">管理当日服务，记录服务情况，处理服务异常</p>
+        </div>
+        <div class="header-actions">
+          <el-button type="primary" icon="el-icon-plus" @click="addService">新增服务</el-button>
+          <el-button type="success" icon="el-icon-download" @click="exportServices">导出数据</el-button>
+        </div>
+      </div>
     </div>
 
     <!-- 今日服务概览 -->
-    <div class="overview-section">
-      <el-row :gutter="20">
-        <el-col :span="6">
-          <div class="overview-card">
-            <div class="card-icon hotel">
-              <i class="el-icon-house"></i>
+    <div class="stats-panel">
+      <el-card class="stats-card">
+        <div slot="header" class="stats-header">
+          <i class="el-icon-data-line"></i>
+          <span>今日服务概览</span>
+        </div>
+        <el-row :gutter="20">
+          <el-col :span="6">
+            <div class="stat-card">
+              <div class="stat-icon hotel">
+                <i class="el-icon-house"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number">{{ todayStats.hotelCheckins }}</div>
+                <div class="stat-label">今日入住</div>
+                <div class="stat-trend">
+                  <i class="el-icon-top"></i>
+                  <span>+12%</span>
+                </div>
+              </div>
             </div>
-            <div class="card-content">
-              <div class="card-number">{{ todayStats.hotelCheckins }}</div>
-              <div class="card-label">今日入住</div>
+          </el-col>
+          <el-col :span="6">
+            <div class="stat-card">
+              <div class="stat-icon ticket">
+                <i class="el-icon-tickets"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number">{{ todayStats.ticketEntries }}</div>
+                <div class="stat-label">今日入园</div>
+                <div class="stat-trend">
+                  <i class="el-icon-top"></i>
+                  <span>+8%</span>
+                </div>
+              </div>
             </div>
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="overview-card">
-            <div class="card-icon ticket">
-              <i class="el-icon-tickets"></i>
+          </el-col>
+          <el-col :span="6">
+            <div class="stat-card">
+              <div class="stat-icon route">
+                <i class="el-icon-position"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number">{{ todayStats.routeServices }}</div>
+                <div class="stat-label">今日行程</div>
+                <div class="stat-trend">
+                  <i class="el-icon-bottom"></i>
+                  <span>-3%</span>
+                </div>
+              </div>
             </div>
-            <div class="card-content">
-              <div class="card-number">{{ todayStats.ticketEntries }}</div>
-              <div class="card-label">今日入园</div>
+          </el-col>
+          <el-col :span="6">
+            <div class="stat-card">
+              <div class="stat-icon exception">
+                <i class="el-icon-warning"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number">{{ todayStats.exceptions }}</div>
+                <div class="stat-label">异常处理</div>
+                <div class="stat-trend">
+                  <i class="el-icon-bottom"></i>
+                  <span>-15%</span>
+                </div>
+              </div>
             </div>
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="overview-card">
-            <div class="card-icon route">
-              <i class="el-icon-position"></i>
-            </div>
-            <div class="card-content">
-              <div class="card-number">{{ todayStats.routeServices }}</div>
-              <div class="card-label">今日行程</div>
-            </div>
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="overview-card">
-            <div class="card-icon exception">
-              <i class="el-icon-warning"></i>
-            </div>
-            <div class="card-content">
-              <div class="card-number">{{ todayStats.exceptions }}</div>
-              <div class="card-label">异常处理</div>
-            </div>
-          </div>
-        </el-col>
-      </el-row>
+          </el-col>
+        </el-row>
+      </el-card>
     </div>
 
     <!-- 筛选和搜索 -->
     <div class="filter-section">
-      <el-row :gutter="20">
-        <el-col :span="4">
-          <el-select v-model="filters.serviceType" placeholder="服务类型" clearable>
-            <el-option label="全部" value=""></el-option>
-            <el-option label="酒店服务" value="hotel"></el-option>
-            <el-option label="景区服务" value="attraction"></el-option>
-            <el-option label="路线服务" value="route"></el-option>
-          </el-select>
-        </el-col>
-        <el-col :span="4">
-          <el-select v-model="filters.status" placeholder="服务状态" clearable>
-            <el-option label="全部" value=""></el-option>
-            <el-option label="待服务" value="pending"></el-option>
-            <el-option label="服务中" value="in_progress"></el-option>
-            <el-option label="已完成" value="completed"></el-option>
-            <el-option label="异常" value="exception"></el-option>
-          </el-select>
-        </el-col>
-        <el-col :span="6">
-          <el-date-picker
-            v-model="filters.serviceDate"
-            type="date"
-            placeholder="选择服务日期">
-          </el-date-picker>
-        </el-col>
-        <el-col :span="6">
-          <el-input
-            v-model="filters.keyword"
-            placeholder="搜索客户姓名或订单号"
-            prefix-icon="el-icon-search"
-            clearable>
-          </el-input>
-        </el-col>
-        <el-col :span="4">
-          <el-button type="primary" @click="searchServices">搜索</el-button>
-          <el-button @click="resetFilters">重置</el-button>
-        </el-col>
-      </el-row>
+      <el-card class="filter-card">
+        <div class="filter-container">
+          <div class="filter-header">
+            <div class="filter-title">
+              <i class="el-icon-filter"></i>
+              <span>筛选条件</span>
+            </div>
+            <div class="filter-actions">
+              <el-button type="primary" class="search-btn" @click="searchServices">
+                <i class="el-icon-search"></i>
+                搜索
+              </el-button>
+              <el-button class="reset-btn" @click="resetFilters">
+                <i class="el-icon-refresh"></i>
+                重置
+              </el-button>
+            </div>
+          </div>
+          
+          <div class="filter-content">
+            <div class="filter-row">
+              <div class="filter-item">
+                <div class="filter-label">
+                  <i class="el-icon-menu"></i>
+                  <span>服务类型</span>
+                </div>
+                <el-select v-model="filters.serviceType" placeholder="请选择服务类型" clearable class="filter-select">
+                  <el-option label="全部类型" value=""></el-option>
+                  <el-option label="酒店服务" value="hotel">
+                    <span style="float: left">酒店服务</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">住宿相关</span>
+                  </el-option>
+                  <el-option label="景区服务" value="attraction">
+                    <span style="float: left">景区服务</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">景点相关</span>
+                  </el-option>
+                  <el-option label="路线服务" value="route">
+                    <span style="float: left">路线服务</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">行程相关</span>
+                  </el-option>
+                </el-select>
+              </div>
+              
+              <div class="filter-item">
+                <div class="filter-label">
+                  <i class="el-icon-s-order"></i>
+                  <span>服务状态</span>
+                </div>
+                <el-select v-model="filters.status" placeholder="请选择服务状态" clearable class="filter-select">
+                  <el-option label="全部状态" value=""></el-option>
+                  <el-option label="待服务" value="pending">
+                    <span style="float: left">待服务</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">等待开始</span>
+                  </el-option>
+                  <el-option label="服务中" value="in_progress">
+                    <span style="float: left">服务中</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">正在执行</span>
+                  </el-option>
+                  <el-option label="已完成" value="completed">
+                    <span style="float: left">已完成</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">服务结束</span>
+                  </el-option>
+                  <el-option label="异常" value="exception">
+                    <span style="float: left">异常</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">需要处理</span>
+                  </el-option>
+                </el-select>
+              </div>
+              
+              <div class="filter-item">
+                <div class="filter-label">
+                  <i class="el-icon-date"></i>
+                  <span>服务日期</span>
+                </div>
+                <el-date-picker
+                  v-model="filters.serviceDate"
+                  type="date"
+                  placeholder="选择服务日期"
+                  class="filter-date-picker">
+                </el-date-picker>
+              </div>
+              
+              <div class="filter-item">
+                <div class="filter-label">
+                  <i class="el-icon-search"></i>
+                  <span>关键词搜索</span>
+                </div>
+                <el-input
+                  v-model="filters.keyword"
+                  placeholder="搜索客户姓名或订单号"
+                  prefix-icon="el-icon-search"
+                  clearable
+                  class="filter-input">
+                </el-input>
+              </div>
+            </div>
+          </div>
+        </div>
+      </el-card>
     </div>
 
     <!-- 服务列表 -->
     <div class="service-list">
-      <el-table :data="filteredServices" v-loading="loading" stripe>
-        <el-table-column prop="orderNo" label="订单号" width="180">
-          <template slot-scope="scope">
-            <el-link type="primary" @click="viewServiceDetail(scope.row)">{{ scope.row.orderNo }}</el-link>
-          </template>
-        </el-table-column>
-        <el-table-column prop="customerName" label="客户姓名" width="120"></el-table-column>
-        <el-table-column prop="customerPhone" label="联系电话" width="130"></el-table-column>
-        <el-table-column prop="serviceType" label="服务类型" width="100">
-          <template slot-scope="scope">
-            <el-tag :type="getServiceTypeTagType(scope.row.serviceType)" size="mini">
-              {{ getServiceTypeName(scope.row.serviceType) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="serviceName" label="服务项目" min-width="200">
-          <template slot-scope="scope">
-            <div class="service-info">
-              <img :src="scope.row.serviceImage" class="service-image" />
-              <div class="service-details">
-                <div class="service-name">{{ scope.row.serviceName }}</div>
-                <div class="service-location">
-                  <i class="el-icon-location"></i> {{ scope.row.serviceLocation }}
+      <el-card class="list-card">
+        <div slot="header" class="list-header">
+          <div class="list-title">
+            <i class="el-icon-list"></i>
+            <span>服务列表</span>
+          </div>
+          <div class="list-actions">
+            <el-button size="small" icon="el-icon-refresh" @click="refreshServices">刷新</el-button>
+            <el-button size="small" icon="el-icon-download" @click="exportServices">导出</el-button>
+          </div>
+        </div>
+        
+        <el-table :data="filteredServices" v-loading="loading" stripe class="service-table" :header-cell-style="{ textAlign: 'center' }" :cell-style="{ textAlign: 'center' }">
+          <el-table-column prop="orderNo" label="订单号" width="180" align="center">
+            <template slot-scope="scope">
+              <el-link type="primary" @click="viewServiceDetail(scope.row)">{{ scope.row.orderNo }}</el-link>
+            </template>
+          </el-table-column>
+          <el-table-column prop="customerName" label="客户姓名" width="120" align="center"></el-table-column>
+          <el-table-column prop="customerPhone" label="联系电话" width="130" align="center"></el-table-column>
+          <el-table-column prop="serviceType" label="服务类型" width="100" align="center">
+            <template slot-scope="scope">
+              <el-tag :type="getServiceTypeTagType(scope.row.serviceType)" size="mini">
+                {{ getServiceTypeName(scope.row.serviceType) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="serviceName" label="服务项目" min-width="200" align="center">
+            <template slot-scope="scope">
+              <div class="service-info">
+                <el-image :src="scope.row.serviceImage" class="service-image" fit="cover">
+                  <div slot="error" class="image-slot">
+                    <i class="el-icon-picture-outline"></i>
+                  </div>
+                </el-image>
+                <div class="service-details">
+                  <div class="service-name">{{ scope.row.serviceName }}</div>
+                  <div class="service-location">
+                    <i class="el-icon-location"></i> {{ scope.row.serviceLocation }}
+                  </div>
                 </div>
               </div>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="serviceTime" label="服务时间" width="160"></el-table-column>
-        <el-table-column prop="status" label="状态" width="100">
-          <template slot-scope="scope">
-            <el-tag :type="getStatusTagType(scope.row.status)" size="mini">
-              {{ getStatusName(scope.row.status) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="staffName" label="服务人员" width="100"></el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
-          <template slot-scope="scope">
-            <el-button size="mini" @click="viewServiceDetail(scope.row)">详情</el-button>
-            <el-button 
-              size="mini" 
-              type="success" 
-              v-if="scope.row.status === 'pending'"
-              @click="startService(scope.row)">
-              开始服务
-            </el-button>
-            <el-button 
-              size="mini" 
-              type="primary" 
-              v-if="scope.row.status === 'in_progress'"
-              @click="completeService(scope.row)">
-              完成服务
-            </el-button>
-            <el-button 
-              size="mini" 
-              type="warning" 
-              v-if="scope.row.status !== 'exception'"
-              @click="reportException(scope.row)">
-              异常报告
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+            </template>
+          </el-table-column>
+          <el-table-column prop="serviceTime" label="服务时间" width="180" align="center">
+            <template slot-scope="scope">
+              <span class="service-time">{{ scope.row.serviceTime }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="status" label="状态" width="100" align="center">
+            <template slot-scope="scope">
+              <el-tag :type="getStatusTagType(scope.row.status)" size="mini">
+                {{ getStatusName(scope.row.status) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="staffName" label="服务人员" width="100" align="center"></el-table-column>
+          <el-table-column label="操作" width="240" fixed="right" align="center">
+            <template slot-scope="scope">
+              <div class="action-buttons">
+                <el-button size="mini" @click="viewServiceDetail(scope.row)">详情</el-button>
+                <el-button 
+                  size="mini" 
+                  type="success" 
+                  v-if="scope.row.status === 'pending'"
+                  @click="startService(scope.row)">
+                  开始服务
+                </el-button>
+                <el-button 
+                  size="mini" 
+                  type="primary" 
+                  v-if="scope.row.status === 'in_progress'"
+                  @click="completeService(scope.row)">
+                  完成服务
+                </el-button>
+                <el-button 
+                  size="mini" 
+                  type="warning" 
+                  v-if="scope.row.status !== 'exception'"
+                  @click="reportException(scope.row)">
+                  异常报告
+                </el-button>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
     </div>
 
     <!-- 分页 -->
@@ -333,11 +447,11 @@
         </el-form-item>
         
         <el-form-item label="操作内容">
-          <el-input type="textarea" v-model="recordForm.content" :rows="3"></el-input>
+          <el-input type="textarea" v-model="recordForm.content" :rows="3" resize="none" class="fixed-textarea"></el-input>
         </el-form-item>
         
         <el-form-item label="备注">
-          <el-input type="textarea" v-model="recordForm.notes" :rows="2"></el-input>
+          <el-input type="textarea" v-model="recordForm.notes" :rows="2" resize="none" class="fixed-textarea"></el-input>
         </el-form-item>
         
         <el-form-item label="相关图片">
@@ -381,7 +495,7 @@
         </el-form-item>
         
         <el-form-item label="异常描述">
-          <el-input type="textarea" v-model="exceptionForm.description" :rows="4"></el-input>
+          <el-input type="textarea" v-model="exceptionForm.description" :rows="4" resize="none" class="fixed-textarea"></el-input>
         </el-form-item>
         
         <el-form-item label="紧急程度">
@@ -394,7 +508,7 @@
         </el-form-item>
         
         <el-form-item label="处理建议">
-          <el-input type="textarea" v-model="exceptionForm.suggestion" :rows="3"></el-input>
+          <el-input type="textarea" v-model="exceptionForm.suggestion" :rows="3" resize="none" class="fixed-textarea"></el-input>
         </el-form-item>
       </el-form>
       
@@ -586,6 +700,22 @@ export default {
     }
   },
   methods: {
+    addService() {
+      this.$message.info('新增服务功能开发中...');
+    },
+    
+    exportServices() {
+      this.$message.success('服务数据导出成功');
+    },
+    
+    refreshServices() {
+      this.loading = true;
+      setTimeout(() => {
+        this.loading = false;
+        this.$message.success('数据刷新成功');
+      }, 1000);
+    },
+    
     searchServices() {
       // 搜索逻辑已在computed中实现
     },
@@ -827,133 +957,478 @@ export default {
 
 <style scoped>
 .service-management {
-  padding: 20px;
+  padding: 24px;
+  min-height: 100vh;
 }
 
+
+/* 页面标题 */
 .page-header {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title-section {
+  flex: 1;
 }
 
 .title {
-  font-size: 24px;
-  color: #333;
-  margin-bottom: 8px;
+  font-size: 28px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 8px 0;
 }
 
 .subtitle {
-  color: #666;
+  color: #7f8c8d;
   margin: 0;
+  font-size: 14px;
 }
 
-.overview-section {
-  margin-bottom: 30px;
+.header-actions {
+  display: flex;
+  gap: 12px;
 }
 
-.overview-card {
+/* 统计面板 */
+.stats-panel {
+  margin-bottom: 24px;
+}
+
+.stats-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: none;
+}
+
+.stats-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.stats-header i {
+  color: #3b82f6;
+}
+
+.stat-card {
   display: flex;
   align-items: center;
   padding: 20px;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
+  border: 1px solid #f0f2f5;
 }
 
-.overview-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: #e1e6eb;
 }
 
-.card-icon {
+.stat-icon {
   width: 60px;
   height: 60px;
-  border-radius: 50%;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 20px;
+  position: relative;
+  overflow: hidden;
 }
 
-.card-icon.hotel {
-  background: linear-gradient(135deg, #ff9a9e, #fecfef);
-  color: #d63384;
+.stat-icon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+  border-radius: 12px;
 }
 
-.card-icon.ticket {
-  background: linear-gradient(135deg, #a8edea, #fed6e3);
-  color: #20c997;
+.stat-icon.hotel {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
 }
 
-.card-icon.route {
-  background: linear-gradient(135deg, #d299c2, #fef9d7);
-  color: #28a745;
+.stat-icon.ticket {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
 }
 
-.card-icon.exception {
-  background: linear-gradient(135deg, #89f7fe, #66a6ff);
-  color: #6f42c1;
+.stat-icon.route {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
 }
 
-.card-icon i {
+.stat-icon.exception {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  color: white;
+}
+
+.stat-icon i {
   font-size: 24px;
+  position: relative;
+  z-index: 1;
 }
 
-.card-content {
+.stat-content {
   flex: 1;
 }
 
-.card-number {
-  font-size: 28px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 5px;
+.stat-number {
+  font-size: 32px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 4px;
+  line-height: 1;
 }
 
-.card-label {
+.stat-label {
   font-size: 14px;
-  color: #666;
+  color: #7f8c8d;
+  margin-bottom: 8px;
 }
 
+.stat-trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.stat-trend i {
+  font-size: 12px;
+}
+
+.stat-trend .el-icon-top {
+  color: #52c41a;
+}
+
+.stat-trend .el-icon-bottom {
+  color: #ff4d4f;
+}
+
+/* 筛选区域 */
 .filter-section {
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
+.filter-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: none;
+  overflow: hidden;
+}
+
+.filter-container {
+  padding: 0;
+}
+
+.filter-header {
+  background: linear-gradient(135deg, #2c5aa0 0%, #1e3a8a 100%);
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.filter-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.search-btn,
+.reset-btn {
+  height: 40px;
+  border-radius: 20px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+  padding: 0 20px;
+  min-width: 100px;
+}
+
+.search-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.search-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.reset-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.reset-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.filter-content {
+  padding: 24px;
+  background: #fafbfc;
+}
+
+.filter-row {
+  display: flex;
+  gap: 16px;
+  margin: 0;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+  max-width: 280px;
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.filter-label i {
+  color: #3b82f6;
+  font-size: 16px;
+}
+
+.filter-select,
+.filter-input,
+.filter-date-picker {
+  width: 100%;
+}
+
+.filter-select .el-input__inner,
+.filter-input .el-input__inner,
+.filter-date-picker .el-input__inner {
+  height: 44px;
+  line-height: 44px;
+  border-radius: 8px;
+  border: 1px solid #dcdfe6;
+  background: #fafbfc;
+  transition: all 0.3s ease;
+}
+
+.filter-select .el-input__inner:focus,
+.filter-input .el-input__inner:focus,
+.filter-date-picker .el-input__inner:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background: white;
+}
+
+.filter-select .el-input__inner:hover,
+.filter-input .el-input__inner:hover,
+.filter-date-picker .el-input__inner:hover {
+  border-color: #c0c4cc;
+  background: white;
+}
+
+/* 服务列表 */
 .service-list {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+}
+
+.list-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: none;
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.list-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.list-title i {
+  color: #3b82f6;
+}
+
+.list-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.service-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.service-table .el-table th,
+.service-table .el-table td {
+  text-align: center !important;
+  vertical-align: middle !important;
 }
 
 .service-info {
   display: flex;
   align-items: center;
+  justify-content: center;
+  text-align: left;
 }
 
 .service-image {
   width: 60px;
   height: 60px;
-  object-fit: cover;
-  border-radius: 4px;
+  border-radius: 8px;
   margin-right: 12px;
+}
+
+.image-slot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background: #f5f7fa;
+  color: #c0c4cc;
+  font-size: 20px;
 }
 
 .service-details {
   flex: 1;
+  text-align: left;
 }
 
 .service-name {
   font-weight: 500;
   margin-bottom: 4px;
+  color: #2c3e50;
 }
 
 .service-location {
-  color: #666;
+  color: #7f8c8d;
   font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
+.service-time {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  max-width: 100%;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+}
+
+.action-buttons .el-button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  height: 28px;
+  line-height: 1;
+  width: 100%;
+  max-width: 100px;
+  margin: 0;
+}
+
+.action-buttons .el-button--success {
+  background: #52c41a;
+  border-color: #52c41a;
+}
+
+.action-buttons .el-button--success:hover {
+  background: #73d13d;
+  border-color: #73d13d;
+}
+
+.action-buttons .el-button--primary {
+  background: #1890ff;
+  border-color: #1890ff;
+}
+
+.action-buttons .el-button--primary:hover {
+  background: #40a9ff;
+  border-color: #40a9ff;
+}
+
+.action-buttons .el-button--warning {
+  background: #faad14;
+  border-color: #faad14;
+}
+
+.action-buttons .el-button--warning:hover {
+  background: #ffc53d;
+  border-color: #ffc53d;
+}
+
+/* 分页 */
 .pagination {
   text-align: center;
+  margin-top: 24px;
 }
 
 .service-detail {
@@ -1086,5 +1561,28 @@ export default {
 
 .dialog-footer {
   text-align: right;
+}
+
+/* 弹窗输入框固定大小和去掉右下角图标 */
+.fixed-textarea .el-textarea__inner {
+  resize: none !important;
+  width: 100% !important;
+  min-height: 80px !important;
+  max-height: 80px !important;
+}
+
+.fixed-textarea .el-textarea__inner::-webkit-resizer {
+  display: none !important;
+}
+
+/* 所有弹窗中的输入框 */
+.el-dialog .el-input__inner,
+.el-dialog .el-textarea__inner {
+  width: 100% !important;
+  resize: none !important;
+}
+
+.el-dialog .el-textarea__inner::-webkit-resizer {
+  display: none !important;
 }
 </style>
